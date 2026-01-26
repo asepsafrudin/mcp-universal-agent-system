@@ -1,0 +1,102 @@
+{
+  "common": {
+    "welcome": "Welcome to MCP Documentation System",
+    "system_name": "MCP Documentation System",
+    "version": "Version",
+    "created": "Created",
+    "last_updated": "Last Updated",
+    "author": "Author",
+    "status": "Status",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "agents": {
+    "roles": {
+      "researcher": "Senior AI Systems Researcher",
+      "writer": "Lead Technical Documentation Writer", 
+      "checker": "Senior Quality Assurance Engineer"
+    },
+    "researcher": {
+      "goal": "Conduct deep exploration of MCP project structure and identify critical components for comprehensive technical documentation",
+      "instruction": "Please provide a comprehensive analysis covering: 1. Project structure overview, 2. Core components identification, 3. Technology stack analysis, 4. Data flow and integration patterns, 5. Security and performance considerations, 6. Key findings and recommendations"
+    },
+    "writer": {
+      "goal": "Create clear, accurate, and production-ready technical documentation based on Researcher's findings",
+      "instruction": "Please create comprehensive technical documentation including: 1. Executive summary/overview, 2. Architecture and design patterns, 3. Installation and setup instructions, 4. API reference with examples, 5. Usage tutorials with step-by-step guides, 6. Best practices and recommendations"
+    },
+    "checker": {
+      "goal": "Verify accuracy, completeness, and consistency of documentation and ensure alignment with actual implementation",
+      "instruction": "Please perform comprehensive quality assurance including: 1. Documentation accuracy vs. actual implementation, 2. Completeness of all required sections, 3. Code example validation and syntax checking, 4. Consistency in formatting and terminology, 5. Security considerations and best practices"
+    }
+  },
+  "documentation": {
+    "title": "MCP Project Documentation",
+    "sections": {
+      "overview": "Overview",
+      "architecture": "Architecture Overview",
+      "components": "Core Components", 
+      "tools": "Tools Reference",
+      "memory": "Memory System",
+      "installation": "Installation & Setup",
+      "api_reference": "API Reference",
+      "usage": "Usage Examples",
+      "best_practices": "Best Practices",
+      "troubleshooting": "Troubleshooting",
+      "contributing": "Contributing",
+      "changelog": "Changelog"
+    },
+    "workflow": {
+      "research_phase": "Research Phase",
+      "write_phase": "Write Phase", 
+      "check_phase": "Check Phase",
+      "completed": "All phases completed successfully"
+    },
+    "outputs": {
+      "main_documentation": "Main Documentation",
+      "qa_report": "Quality Assurance Report",
+      "research_data": "Research Results",
+      "execution_log": "Execution Log"
+    }
+  },
+  "testing": {
+    "unit_tests": "Unit Tests",
+    "integration_tests": "Integration Tests", 
+    "performance_tests": "Performance Tests",
+    "all_passed": "All tests passed successfully",
+    "failed": "Some tests failed",
+    "coverage": "Test Coverage",
+    "benchmark": "Performance Benchmark"
+  },
+  "cicd": {
+    "pipeline": "CI/CD Pipeline",
+    "build": "Build",
+    "test": "Test",
+    "deploy": "Deploy",
+    "quality_gate": "Quality Gate",
+    "automated": "Automated",
+    "manual_review": "Manual Review Required"
+  },
+  "templates": {
+    "system": "Template System",
+    "customization": "Template Customization",
+    "dynamic_content": "Dynamic Content Generation",
+    "styles": "Style Options"
+  },
+  "collaboration": {
+    "realtime": "Real-time Collaboration",
+    "status_updates": "Status Updates",
+    "multi_user": "Multi-user Support",
+    "live_editing": "Live Document Editing",
+    "monitoring": "Progress Monitoring"
+  },
+  "messages": {
+    "crew_started": "🚀 Starting MCP Documentation CrewAI execution...",
+    "crew_completed": "✅ CREWAI EXECUTION COMPLETED!",
+    "execution_time": "Total execution time: {time} seconds",
+    "validation_failed": "Setup validation failed. Please check configuration.",
+    "success": "SUCCESS! MCP Documentation CrewAI completed!",
+    "failed": "FAILED! Please check the error messages above."
+  }
+}

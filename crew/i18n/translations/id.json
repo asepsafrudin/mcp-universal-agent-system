@@ -1,0 +1,102 @@
+{
+  "common": {
+    "welcome": "Selamat Datang di Sistem Dokumentasi MCP",
+    "system_name": "Sistem Dokumentasi MCP",
+    "version": "Versi",
+    "created": "Dibuat",
+    "last_updated": "Terakhir Diperbarui",
+    "author": "Penulis",
+    "status": "Status",
+    "success": "Berhasil",
+    "error": "Error",
+    "warning": "Peringatan",
+    "info": "Informasi"
+  },
+  "agents": {
+    "roles": {
+      "researcher": "Peneliti Sistem AI Senior",
+      "writer": "Penulis Dokumentasi Teknis Utama",
+      "checker": "Insinyur Quality Assurance Senior"
+    },
+    "researcher": {
+      "goal": "Lakukan eksplorasi mendalam struktur proyek MCP dan identifikasi komponen kritis untuk dokumentasi teknis yang komprehensif",
+      "instruction": "Mohon berikan analisis komprehensif yang mencakup: 1. Overview struktur proyek, 2. Identifikasi komponen inti, 3. Analisis teknologi stack, 4. Pola aliran data dan integrasi, 5. Pertimbangan keamanan dan performa, 6. Temuan utama dan rekomendasi"
+    },
+    "writer": {
+      "goal": "Buat dokumentasi teknis yang jelas, akurat, dan siap produksi berdasarkan temuan Researcher",
+      "instruction": "Mohon buat dokumentasi teknis komprehensif yang mencakup: 1. Ringkasan eksekutif/overview, 2. Arsitektur dan pola desain, 3. Petunjuk instalasi dan pengaturan, 4. Referensi API dengan contoh, 5. Tutorial penggunaan dengan panduan langkah demi langkah, 6. Best practices dan rekomendasi"
+    },
+    "checker": {
+      "goal": "Verifikasi akurasi, kelengkapan, dan konsistensi dokumentasi serta memastikan keselarasan dengan implementasi aktual",
+      "instruction": "Mohon lakukan quality assurance komprehensif yang mencakup: 1. Akurasi dokumentasi vs implementasi aktual, 2. Kelengkapan semua bagian yang diperlukan, 3. Validasi contoh kode dan pengecekan sintaks, 4. Konsistensi formatting dan terminologi, 5. Pertimbangan keamanan dan best practices"
+    }
+  },
+  "documentation": {
+    "title": "Dokumentasi Proyek MCP",
+    "sections": {
+      "overview": "Ikhtisar",
+      "architecture": "Ikhtisar Arsitektur",
+      "components": "Komponen Inti",
+      "tools": "Referensi Tools",
+      "memory": "Sistem Memory",
+      "installation": "Instalasi & Pengaturan",
+      "api_reference": "Referensi API",
+      "usage": "Contoh Penggunaan",
+      "best_practices": "Best Practices",
+      "troubleshooting": "Troubleshooting",
+      "contributing": "Berkontribusi",
+      "changelog": "Changelog"
+    },
+    "workflow": {
+      "research_phase": "Fase Penelitian",
+      "write_phase": "Fase Penulisan",
+      "check_phase": "Fase Pemeriksaan",
+      "completed": "Semua fase berhasil diselesaikan"
+    },
+    "outputs": {
+      "main_documentation": "Dokumentasi Utama",
+      "qa_report": "Laporan Quality Assurance",
+      "research_data": "Hasil Penelitian",
+      "execution_log": "Log Eksekusi"
+    }
+  },
+  "testing": {
+    "unit_tests": "Unit Tests",
+    "integration_tests": "Integration Tests",
+    "performance_tests": "Performance Tests",
+    "all_passed": "Semua test berhasil",
+    "failed": "Beberapa test gagal",
+    "coverage": "Test Coverage",
+    "benchmark": "Performance Benchmark"
+  },
+  "cicd": {
+    "pipeline": "Pipeline CI/CD",
+    "build": "Build",
+    "test": "Test",
+    "deploy": "Deploy",
+    "quality_gate": "Quality Gate",
+    "automated": "Terotomasi",
+    "manual_review": "Review Manual Diperlukan"
+  },
+  "templates": {
+    "system": "Sistem Template",
+    "customization": "Kustomisasi Template",
+    "dynamic_content": "Generasi Konten Dinamis",
+    "styles": "Pilihan Style"
+  },
+  "collaboration": {
+    "realtime": "Kolaborasi Real-time",
+    "status_updates": "Update Status",
+    "multi_user": "Dukungan Multi-user",
+    "live_editing": "Live Document Editing",
+    "monitoring": "Monitoring Progress"
+  },
+  "messages": {
+    "crew_started": "🚀 Memulai eksekusi CrewAI Dokumentasi MCP...",
+    "crew_completed": "✅ EKSEKUSI CREWAI SELESAI!",
+    "execution_time": "Total waktu eksekusi: {time} detik",
+    "validation_failed": "Validasi setup gagal. Mohon periksa konfigurasi.",
+    "success": "BERHASIL! CrewAI Dokumentasi MCP selesai!",
+    "failed": "GAGAL! Mohon periksa pesan error di atas."
+  }
+}

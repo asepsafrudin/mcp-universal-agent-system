@@ -1,0 +1,102 @@
+{
+  "common": {
+    "welcome": "Bienvenido al Sistema de Documentación MCP",
+    "system_name": "Sistema de Documentación MCP",
+    "version": "Versión",
+    "created": "Creado",
+    "last_updated": "Última Actualización",
+    "author": "Autor",
+    "status": "Estado",
+    "success": "Éxito",
+    "error": "Error",
+    "warning": "Advertencia",
+    "info": "Información"
+  },
+  "agents": {
+    "roles": {
+      "researcher": "Investigador Senior de Sistemas IA",
+      "writer": "Escritor Principal de Documentación Técnica",
+      "checker": "Ingeniero Senior de Aseguramiento de Calidad"
+    },
+    "researcher": {
+      "goal": "Realizar exploración profunda de la estructura del proyecto MCP e identificar componentes críticos para documentación técnica integral",
+      "instruction": "Por favor proporcione un análisis integral que cubra: 1. Resumen de la estructura del proyecto, 2. Identificación de componentes centrales, 3. Análisis del stack tecnológico, 4. Patrones de flujo de datos e integración, 5. Consideraciones de seguridad y rendimiento, 6. Hallazgos clave y recomendaciones"
+    },
+    "writer": {
+      "goal": "Crear documentación técnica clara, precisa y lista para producción basada en los hallazgos del Investigador",
+      "instruction": "Por favor cree documentación técnica integral incluyendo: 1. Resumen ejecutivo/visión general, 2. Arquitectura y patrones de diseño, 3. Instrucciones de instalación y configuración, 4. Referencia de API con ejemplos, 5. Tutoriales de uso con guías paso a paso, 6. Mejores prácticas y recomendaciones"
+    },
+    "checker": {
+      "goal": "Verificar precisión, completitud y consistencia de documentación y asegurar alineación con implementación real",
+      "instruction": "Por favor realice aseguramiento de calidad integral incluyendo: 1. Precisión de documentación vs implementación real, 2. Completitud de todas las secciones requeridas, 3. Validación de ejemplos de código y verificación de sintaxis, 4. Consistencia en formato y terminología, 5. Consideraciones de seguridad y mejores prácticas"
+    }
+  },
+  "documentation": {
+    "title": "Documentación del Proyecto MCP",
+    "sections": {
+      "overview": "Resumen",
+      "architecture": "Resumen de Arquitectura",
+      "components": "Componentes Centrales",
+      "tools": "Referencia de Herramientas",
+      "memory": "Sistema de Memoria",
+      "installation": "Instalación y Configuración",
+      "api_reference": "Referencia de API",
+      "usage": "Ejemplos de Uso",
+      "best_practices": "Mejores Prácticas",
+      "troubleshooting": "Solución de Problemas",
+      "contributing": "Contribuir",
+      "changelog": "Registro de Cambios"
+    },
+    "workflow": {
+      "research_phase": "Fase de Investigación",
+      "write_phase": "Fase de Escritura",
+      "check_phase": "Fase de Verificación",
+      "completed": "Todas las fases completadas exitosamente"
+    },
+    "outputs": {
+      "main_documentation": "Documentación Principal",
+      "qa_report": "Reporte de Aseguramiento de Calidad",
+      "research_data": "Resultados de Investigación",
+      "execution_log": "Log de Ejecución"
+    }
+  },
+  "testing": {
+    "unit_tests": "Pruebas Unitarias",
+    "integration_tests": "Pruebas de Integración",
+    "performance_tests": "Pruebas de Rendimiento",
+    "all_passed": "Todas las pruebas pasaron exitosamente",
+    "failed": "Algunas pruebas fallaron",
+    "coverage": "Cobertura de Pruebas",
+    "benchmark": "Benchmark de Rendimiento"
+  },
+  "cicd": {
+    "pipeline": "Pipeline CI/CD",
+    "build": "Construir",
+    "test": "Probar",
+    "deploy": "Desplegar",
+    "quality_gate": "Puerta de Calidad",
+    "automated": "Automatizado",
+    "manual_review": "Revisión Manual Requerida"
+  },
+  "templates": {
+    "system": "Sistema de Plantillas",
+    "customization": "Personalización de Plantillas",
+    "dynamic_content": "Generación de Contenido Dinámico",
+    "styles": "Opciones de Estilo"
+  },
+  "collaboration": {
+    "realtime": "Colaboración en Tiempo Real",
+    "status_updates": "Actualizaciones de Estado",
+    "multi_user": "Soporte Multi-usuario",
+    "live_editing": "Edición en Vivo de Documentos",
+    "monitoring": "Monitoreo de Progreso"
+  },
+  "messages": {
+    "crew_started": "🚀 Iniciando ejecución de CrewAI de Documentación MCP...",
+    "crew_completed": "✅ ¡EJECUCIÓN DE CREWAI COMPLETADA!",
+    "execution_time": "Tiempo total de ejecución: {time} segundos",
+    "validation_failed": "Validación de configuración fallida. Por favor revise la configuración.",
+    "success": "¡ÉXITO! ¡CrewAI de Documentación MCP completado!",
+    "failed": "¡FALLÓ! Por favor revise los mensajes de error arriba."
+  }
+}

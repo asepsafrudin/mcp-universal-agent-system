@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "mcp-universal": {
+      "command": "bash",
+      "args": [
+        "/home/aseps/MCP/mcp-memory/docker-run.sh"
+      ],
+      "env": {
+        "PYTHONPATH": "/home/aseps/MCP/mcp-memory"
+      },
+      "description": "Universal MCP Server dengan long-term memory (PostgreSQL + pgvector)",
+      "tools": [
+        "list_dir",
+        "read_file",
+        "file_writer",
+        "memory_save",
+        "memory_search",
+        "memory_list",
+        "memory_delete",
+        "run_shell"
+      ]
+    },
+    "mcp-subagent": {
+      "command": "bash",
+      "args": [
+        "/home/aseps/MCP/mcp-subagent-system/mcp-run.sh"
+      ],
+      "description": "MCP Sub-Agent System untuk eksekusi tugas otonom",
+      "tools": [
+        "execute_task"
+      ]
+    }
+  },
+  "defaultServer": "mcp-subagent",
+  "autoStart": true
+}

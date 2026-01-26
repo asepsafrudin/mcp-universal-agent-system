@@ -1,0 +1,21 @@
+# Quality monitoring
+quality__pycache__/
+*.env
+.env.secret
+.venv/
+
+# Old audit and quality reports
+*_audit_*.json
+quality_report_*.json
+*.log.txt
+
+# Keep latest reports (optional - uncomment if needed)
+# !quality_report_latest.json
+# !mcp_server_audit_latest.json
+.qualityrc
+mcp-data/
+*.log
+mcp_subagent.pid
+mcp_subagent.log
+.pytest_cache/
+__pycache__/
