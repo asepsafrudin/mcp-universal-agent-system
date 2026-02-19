@@ -10,6 +10,7 @@ quality__pycache__/
 
 # SECURITY: Greyware simulation tools — must never reach remote repository
 simulation/greyware_op/
+mcp-unified/simulation/greyware_op/
 simulation/meshcentral_server/meshcentral-data/
 
 # Old audit and quality reports

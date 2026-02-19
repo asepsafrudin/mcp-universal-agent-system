@@ -16,7 +16,7 @@ This document provides an overview of known security risks in the MCP Unified Ag
 
 | Risk Area | Severity | Status | Reference |
 |-----------|----------|--------|-----------|
-| Greyware Simulation Tools | 🔴 CRITICAL | Pending Isolation | [ISOLATION_REQUIRED.md](mcp-unified/simulation/greyware_op/ISOLATION_REQUIRED.md) |
+| Greyware Simulation Tools | 🔴 CRITICAL | Mitigated | [ISOLATION_REQUIRED.md](mcp-unified/simulation/greyware_op/ISOLATION_REQUIRED.md) |
 | MeshCentral Server Bundle | 🟡 HIGH | Separation Planned | [docs/meshcentral_separation_plan.md](docs/meshcentral_separation_plan.md) |
 | Hardcoded Credentials | 🔴 CRITICAL | ✅ RESOLVED | See below |
 | Shell Command Whitelist | 🔴 CRITICAL | ✅ RESOLVED | See below |
@@ -42,9 +42,9 @@ The folder `mcp-unified/simulation/greyware_op/` contains tools that can be clas
 
 ### Current Status
 - [x] Isolation notice created
+- [x] .gitignore updated
 - [ ] Repository separation completed
 - [ ] Git history cleaned
-- [ ] .gitignore updated
 
 ### Required Actions
 1. **Immediate:** Review [ISOLATION_REQUIRED.md](mcp-unified/simulation/greyware_op/ISOLATION_REQUIRED.md)
@@ -84,15 +84,17 @@ See [docs/meshcentral_separation_plan.md](docs/meshcentral_separation_plan.md) f
 ## Hardcoded Credentials — RESOLVED ✅
 
 ### Issue
-Password `secure123` was hardcoded in:
+Passwords were hardcoded in several places:
 - `mcp-unified/core/config.py`
 - `README.md`
+- `setup_distributed.sh` (RabbitMQ credentials)
 
 ### Resolution
-- [x] Credentials moved to environment variables
-- [x] `.env.example` created with placeholder values
-- [x] `.gitignore` updated to exclude `.env` files
-- [x] Security comments added to config.py
+- [x] All credentials moved to environment variables.
+- [x] `.env.example` created and updated with placeholder values for all services.
+- [x] `.gitignore` updated to exclude `.env` files.
+- [x] Security comments added to `config.py`.
+- [x] Scripts now validate for the presence of environment variables before running.
 
 ### Required Actions
 1. Rotate the actual password if it was ever used in production
