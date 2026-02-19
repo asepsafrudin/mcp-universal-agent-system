@@ -1,36 +1,44 @@
 {
   "mcpServers": {
-    "mcp-universal": {
+    "mcp-unified": {
       "command": "bash",
       "args": [
-        "/home/aseps/MCP/mcp-memory/docker-run.sh"
+        "/home/aseps/MCP/mcp-unified/run.sh"
       ],
       "env": {
-        "PYTHONPATH": "/home/aseps/MCP/mcp-memory"
+        "PYTHONPATH": "/home/aseps/MCP/mcp-unified"
       },
-      "description": "Universal MCP Server dengan long-term memory (PostgreSQL + pgvector)",
+      "description": "Unified MCP Server (Intelligence + Execution + Memory)",
       "tools": [
         "list_dir",
         "read_file",
-        "file_writer",
+        "write_file",
+        "run_shell",
         "memory_save",
         "memory_search",
         "memory_list",
-        "memory_delete",
-        "run_shell"
+        "create_workspace",
+        "cleanup_workspace",
+        "create_plan",
+        "publish_remote_task"
       ]
     },
-    "mcp-subagent": {
-      "command": "bash",
+    "rust-mcp-filesystem": {
+      "command": "docker",
       "args": [
-        "/home/aseps/MCP/mcp-subagent-system/mcp-run.sh"
+        "run",
+        "-i",
+        "--rm",
+        "--entrypoint",
+        "mcp-server-filesystem",
+        "-v",
+        "/home/aseps/MCP:/home/aseps/MCP",
+        "mekayelanik/filesystem-mcp:latest",
+        "/home/aseps/MCP"
       ],
-      "description": "MCP Sub-Agent System untuk eksekusi tugas otonom",
-      "tools": [
-        "execute_task"
-      ]
+      "description": "High-performance Rust-based Filesystem MCP Server"
     }
   },
-  "defaultServer": "mcp-subagent",
+  "defaultServer": "mcp-unified",
   "autoStart": true
 }

@@ -1,21 +1,32 @@
-# Quality monitoring
+# Workspace Management
+logs/
+workspace/
 quality__pycache__/
 *.env
+.env
+.env.local
 .env.secret
 .venv/
+
+# SECURITY: Greyware simulation tools — must never reach remote repository
+simulation/greyware_op/
+simulation/meshcentral_server/meshcentral-data/
 
 # Old audit and quality reports
 *_audit_*.json
 quality_report_*.json
 *.log.txt
+*.log
 
-# Keep latest reports (optional - uncomment if needed)
-# !quality_report_latest.json
-# !mcp_server_audit_latest.json
+# Python & System Trash
+__pycache__/
+.pytest_cache/
+*.pyc
 .qualityrc
 mcp-data/
-*.log
 mcp_subagent.pid
 mcp_subagent.log
-.pytest_cache/
-__pycache__/
+mcp_memory.pid
+mcp_memory.log
+meshcentral-backup-*.tar.gz
+meshcentral-backup-*.tar.gz
