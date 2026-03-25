@@ -30,4 +30,40 @@ mcp_subagent.log
 mcp_memory.pid
 mcp_memory.log
 meshcentral-backup-*.tar.gz
-meshcentral-backup-*.tar.gz
+
+# Sensitive credentials
+.env.secret
+*.secret
+
+# Log files
+server.log
+!logs/.gitkeep
+
+# Docker output
+docker_output.txt
+
+# Backup files
+*.tar.gz
+*.tar
+*.zip
+backups/*.tar.gz
+
+# Temporary files
+.tmp/
+.cache/
+
+# Archive Review Folder
+archive-review/
+
+# External Project Symlinks (relative paths)
+Bangda_PUU
+
+# Workspace Secrets, Credentials and Caches
+credentials/
+.env.*
+venv/
+.vscode/
+ocr_cache/
+processed/
+*.json
+.ltm_memory.json

@@ -1,0 +1,34 @@
+[Unit]
+Description=WSL Health Monitor for MCP Unified Hub
+Documentation=file:///home/aseps/MCP/docs/04-operations/wsl-always-on-server.md
+After=mcp-unified.service network.target
+Wants=mcp-unified.service
+
+[Service]
+Type=simple
+User=aseps
+Group=aseps
+WorkingDirectory=/home/aseps/MCP
+Environment="PYTHONPATH=/home/aseps/MCP/mcp-unified"
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+# Run the health monitor
+ExecStart=/usr/bin/python3 /home/aseps/MCP/scripts/wsl-health-monitor.py
+
+# Restart behavior
+Restart=always
+RestartSec=30
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wsl-health-monitor
+
+# Resource limits (hemat resource)
+CPUQuota=10%
+MemoryLimit=100M
+
+[Install]
+WantedBy=multi-user.target

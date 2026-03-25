@@ -1,44 +1,24 @@
 {
-  "mcpServers": {
-    "mcp-unified": {
-      "command": "bash",
-      "args": [
-        "/home/aseps/MCP/mcp-unified/run.sh"
-      ],
-      "env": {
-        "PYTHONPATH": "/home/aseps/MCP/mcp-unified"
-      },
-      "description": "Unified MCP Server (Intelligence + Execution + Memory)",
-      "tools": [
-        "list_dir",
-        "read_file",
-        "write_file",
-        "run_shell",
-        "memory_save",
-        "memory_search",
-        "memory_list",
-        "create_workspace",
-        "cleanup_workspace",
-        "create_plan",
-        "publish_remote_task"
-      ]
+    "mcpServers": {
+        "mcp-unified": {
+            "command": "python3",
+            "args": [
+                "/home/aseps/MCP/mcp-unified/mcp_server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "/home/aseps/MCP/mcp-unified",
+                "MCP_SERVER_MODE": "true",
+                "POSTGRES_USER": "aseps",
+                "POSTGRES_PASSWORD": "secure123",
+                "POSTGRES_SERVER": "localhost",
+                "POSTGRES_PORT": "5432",
+                "POSTGRES_DB": "mcp",
+                "REDIS_URL": "redis://localhost:6379/0",
+                "LOG_LEVEL": "INFO",
+                "MEMORY_MODE": "enabled"
+            },
+            "description": "MCP Unified Server - Tools for memory, scheduler, and integrations"
+        }
     },
-    "rust-mcp-filesystem": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "--entrypoint",
-        "mcp-server-filesystem",
-        "-v",
-        "/home/aseps/MCP:/home/aseps/MCP",
-        "mekayelanik/filesystem-mcp:latest",
-        "/home/aseps/MCP"
-      ],
-      "description": "High-performance Rust-based Filesystem MCP Server"
-    }
-  },
-  "defaultServer": "mcp-unified",
-  "autoStart": true
+    "autoStart": true
 }
