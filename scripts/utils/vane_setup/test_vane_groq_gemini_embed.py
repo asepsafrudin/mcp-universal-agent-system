@@ -3,7 +3,7 @@ Test Vane: Groq chat + Gemini embedding (tanpa Transformers download)
 """
 import requests
 
-VANE_URL = "http://localhost:3000"
+VANE_URL = "http://localhost:3001"
 
 # Dari output providers sebelumnya:
 # Groq provider yang punya qwen/qwen3-32b

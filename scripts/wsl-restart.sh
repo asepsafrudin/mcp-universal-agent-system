@@ -64,19 +64,35 @@ echo ""
 echo -e "${BLUE}Step 2: Checking dependencies...${NC}"
 
 # Check PostgreSQL
-if ! docker ps | grep -q mcp-pg; then
-    echo -e "${YELLOW}⚠ Starting PostgreSQL...${NC}"
-    docker start mcp-pg 2>/dev/null || echo "  Container not found, may need manual setup"
+if ! docker ps | grep -q mcp-postgres; then
+    echo -e "${YELLOW}⚠ Starting PostgreSQL (mcp-postgres)...${NC}"
+    docker start mcp-postgres 2>/dev/null || echo "  Container not found, may need manual setup"
 else
     echo -e "${GREEN}✓ PostgreSQL is running${NC}"
 fi
 
 # Check Redis
-if ! docker ps | grep -q redis; then
-    echo -e "${YELLOW}⚠ Starting Redis...${NC}"
-    docker start redis 2>/dev/null || echo "  Container not found, may need manual setup"
+if ! docker ps | grep -q mcp-redis; then
+    echo -e "${YELLOW}⚠ Starting Redis (mcp-redis)...${NC}"
+    docker start mcp-redis 2>/dev/null || echo "  Container not found, may need manual setup"
 else
     echo -e "${GREEN}✓ Redis is running${NC}"
+fi
+
+# Check Vane AI Search
+if ! docker ps | grep -q vane; then
+    echo -e "${YELLOW}⚠ Starting Vane AI Search (vane)...${NC}"
+    docker start vane 2>/dev/null || echo "  Container not found, may need manual setup"
+else
+    echo -e "${GREEN}✓ Vane AI Search is running${NC}"
+fi
+
+# Check WAHA (WhatsApp)
+if ! docker ps | grep -q waha; then
+    echo -e "${YELLOW}⚠ Starting WAHA WhatsApp Gateway (waha)...${NC}"
+    docker start waha 2>/dev/null || echo "  Container not found, may need manual setup"
+else
+    echo -e "${GREEN}✓ WAHA WhatsApp Gateway is running${NC}"
 fi
 
 echo ""

@@ -1,0 +1,15 @@
+services:
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: waha
+    ports:
+      - "3000:3000"
+    environment:
+      - WHATSAPP_API_KEY=mcp_unified_secret # match .env
+    volumes:
+      - waha-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  waha-data:
+    name: "waha-data"

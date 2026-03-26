@@ -2,7 +2,7 @@
 import requests
 import json
 
-VANE_URL = "http://localhost:3000"
+VANE_URL = "http://localhost:3001"
 
 def run():
     # Cek providers

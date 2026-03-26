@@ -67,19 +67,72 @@ fi
 # Check PostgreSQL
 echo ""
 echo -e "${BLUE}PostgreSQL (Docker):${NC}"
-if docker ps | grep -q mcp-pg; then
-    echo -e "  ${GREEN}✓ mcp-pg container is running${NC}"
+if docker ps | grep -q mcp-postgres; then
+    echo -e "  ${GREEN}✓ mcp-postgres container is running${NC}"
 else
-    echo -e "  ${YELLOW}⚠ mcp-pg container is NOT running${NC}"
+    echo -e "  ${YELLOW}⚠ mcp-postgres container is NOT running${NC}"
 fi
 
 # Check Redis
 echo ""
 echo -e "${BLUE}Redis (Docker):${NC}"
-if docker ps | grep -q redis; then
-    echo -e "  ${GREEN}✓ redis container is running${NC}"
+if docker ps | grep -q mcp-redis; then
+    echo -e "  ${GREEN}✓ mcp-redis container is running${NC}"
 else
-    echo -e "  ${YELLOW}⚠ redis container is NOT running${NC}"
+    echo -e "  ${YELLOW}⚠ mcp-redis container is NOT running${NC}"
+fi
+
+# Check Vane AI Search
+echo ""
+echo -e "${BLUE}Vane AI Search (Docker):${NC}"
+if docker ps | grep -q vane; then
+    echo -e "  ${GREEN}✓ vane container is running (Port 3001, 8090)${NC}"
+else
+    echo -e "  ${YELLOW}⚠ vane container is NOT running${NC}"
+fi
+
+# Check WAHA (WhatsApp)
+echo ""
+echo -e "${BLUE}WAHA WhatsApp Gateway (Docker):${NC}"
+if docker ps | grep -q waha; then
+    echo -e "  ${GREEN}✓ waha container is running (Port 3000)${NC}"
+else
+    echo -e "  ${YELLOW}⚠ waha container is NOT running${NC}"
+fi
+
+# Check Serena
+echo ""
+echo -e "${BLUE}Serena Coding Toolkit:${NC}"
+if [ -d "/home/aseps/MCP/services/serena" ]; then
+    echo -e "  ${GREEN}✓ serena directory exists in services/${NC}"
+    if pgrep -f "serena-mcp-server" > /dev/null; then
+        echo -e "  ${GREEN}✓ serena-mcp-server process is active${NC}"
+    else
+        echo -e "  ${YELLOW}ℹ serena-mcp-server is not running (started on-demand)${NC}"
+    fi
+else
+    echo -e "  ${RED}✗ serena directory NOT found in services/${NC}"
+fi
+
+# Check Doc Processor
+echo ""
+echo -e "${BLUE}Document Processor Engine:${NC}"
+if [ -f "/home/aseps/MCP/services/doc-processor/paddle_ocr.py" ]; then
+    echo -e "  ${GREEN}✓ Doc-Processor (PaddleOCR) engine is ready${NC}"
+else
+    echo -e "  ${YELLOW}⚠ Doc-Processor engine not found in services/${NC}"
+fi
+
+# Check Google Workspace Service
+echo ""
+echo -e "${BLUE}Google Workspace Service:${NC}"
+if [ -d "/home/aseps/MCP/services/google" ]; then
+    echo -e "  ${GREEN}✓ Google service interface exists${NC}"
+    if [ -d "/home/aseps/MCP/config/credentials/google" ]; then
+        echo -e "  ${GREEN}✓ Google credentials directory found${NC}"
+    fi
+else
+    echo -e "  ${RED}✗ Google service NOT found in services/${NC}"
 fi
 
 # Check resources

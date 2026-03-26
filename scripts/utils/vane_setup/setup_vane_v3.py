@@ -3,7 +3,7 @@ import requests
 import json
 import uuid
 
-VANE_URL = "http://localhost:3000"
+VANE_URL = "http://localhost:3001"
 GROQ_API_KEY = "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"
 GEMINI_API_KEY = "AIzaSyCm7b-z_acPbex-tthNPcwKKHY3y83xNAg"
 

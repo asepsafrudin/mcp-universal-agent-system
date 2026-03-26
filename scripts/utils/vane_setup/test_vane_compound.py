@@ -3,7 +3,7 @@ Test Vane: groq/compound-mini (support response_format) + Gemini embedding
 """
 import requests
 
-VANE_URL = "http://localhost:3000"
+VANE_URL = "http://localhost:3001"
 
 # Provider IDs dari output sebelumnya
 GROQ_PROVIDER_IDS = [

@@ -31,8 +31,11 @@ from pathlib import Path
 # ============================================
 # Configuration
 # ============================================
-HEALTH_CHECK_INTERVAL = 300  # 5 minutes (hemat resource)
+HEALTH_CHECK_INTERVAL = 300  # 5 minutes
 MCP_HEALTH_URL = "http://localhost:8000/health"
+VANE_HEALTH_URL = "http://localhost:3001"  # Simple UI check
+WAHA_HEALTH_URL = "http://localhost:3000"  # WAHA API check
+
 MCP_SERVICE = "mcp-unified"
 LOG_FILE = Path("/home/aseps/MCP/logs/wsl-health-monitor.log")
 MAX_RETRIES = 3
@@ -74,29 +77,23 @@ def run_command(cmd: list[str], check: bool = False) -> tuple[int, str, str]:
         return -1, "", str(e)
 
 
-def check_mcp_health() -> dict:
-    """Check MCP server health via HTTP endpoint."""
+def check_http_health(url: str, name: str) -> bool:
+    """Check health of a service via simple GET request."""
     try:
         import urllib.request
-        import urllib.error
-        
-        req = urllib.request.Request(
-            MCP_HEALTH_URL,
-            method='GET',
-            headers={'Accept': 'application/json'}
-        )
-        
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            return {
-                'healthy': data.get('status') == 'healthy',
-                'data': data
-            }
+        req = urllib.request.Request(url, method='GET')
+        with urllib.request.urlopen(req, timeout=5) as response:
+            return response.getcode() < 400
     except Exception as e:
-        return {
-            'healthy': False,
-            'error': str(e)
-        }
+        logger.warning(f"Health check for {name} failed: {e}")
+        return False
+
+
+def restart_docker_service(name: str) -> bool:
+    """Restart a docker container."""
+    logger.warning(f"Attempting to start docker container: {name}")
+    code, stdout, stderr = run_command(['docker', 'start', name])
+    return code == 0
 
 
 def restart_mcp_service() -> bool:
@@ -164,29 +161,33 @@ async def monitor_loop():
     
     while True:
         try:
-            logger.info("Performing health check...")
+            logger.info("Performing comprehensive health check...")
             
-            # Check HTTP health endpoint
-            health = check_mcp_health()
-            
-            if health['healthy']:
-                logger.info(f"✓ Health check PASSED - Tools: {health['data'].get('tools_available', 'N/A')}")
+            # 1. Check MCP Hub (Port 8000)
+            mcp_ok = check_http_health(MCP_HEALTH_URL, "MCP-Hub")
+            if mcp_ok:
+                logger.info("✓ MCP-Hub is UP")
                 consecutive_failures = 0
             else:
-                logger.warning(f"✗ Health check FAILED - {health.get('error', 'Unknown error')}")
                 consecutive_failures += 1
-                
-                # Check service status
-                status = get_service_status()
-                logger.info(f"Service status: {status['status']}")
-                
-                # If multiple failures, attempt restart
                 if consecutive_failures >= 2:
-                    logger.error(f"Multiple failures detected ({consecutive_failures})")
-                    if restart_mcp_service():
-                        consecutive_failures = 0
-                    else:
-                        logger.critical("CRITICAL: MCP service restart failed!")
+                    restart_mcp_service()
+            
+            # 2. Check Vane AI (Port 3001)
+            vane_ok = check_http_health(VANE_HEALTH_URL, "Vane-AI")
+            if not vane_ok:
+                logger.warning("✗ Vane-AI is DOWN - attempting restart")
+                restart_docker_service("vane")
+            else:
+                logger.info("✓ Vane-AI is UP")
+
+            # 3. Check WAHA (Port 3000)
+            waha_ok = check_http_health(WAHA_HEALTH_URL, "WAHA")
+            if not waha_ok:
+                logger.warning("✗ WAHA is DOWN - attempting restart")
+                restart_docker_service("waha")
+            else:
+                logger.info("✓ WAHA is UP")
             
             logger.info(f"Next check in {HEALTH_CHECK_INTERVAL} seconds...")
             await asyncio.sleep(HEALTH_CHECK_INTERVAL)

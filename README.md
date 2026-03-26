@@ -19,16 +19,15 @@ Proyek ini adalah implementasi **MCP (Model Context Protocol)** yang menyediakan
 ## 📁 Struktur Direktori
 
 /home/aseps/MCP/
-├── � core/                # Core logic & Server (mcp-unified)
-├── � domains/             # Domain Specific Logic (PUU, Regional)
-├── 📂 integrations/        # Connectors (Telegram, Vane, Storage)
-├── 📂 infrastructure/      # System Ops & Deployment scripts
-├── � tasks/               # Unified Task Management (01-05 structure)
-├── 📂 docs/                # Central Documentation
-├── � scripts/             # Internal utilities (symlinked)
-├── � workspace/           # transient data
-└── 📄 README.md            # The Map of the World
-```
+├── 📂 mcp-unified/         # Universal MCP Server & Core Logic
+├── 📂 serena/              # Serena Semantic Coding Agent Toolkit
+├── 📂 data/                # Data storage (input, processed, mcp-data, dll)
+├── 📂 config/              # Kredensial & Konfigurasi Eksternal
+├── 📂 tasks/               # Manajemen Task (01-05 structure)
+├── 📂 docs/                # Central Documentation & Proposals
+├── 📂 scripts/             # Internal utilities (.sh, .py)
+├── 📂 tests/               # Unit testing & Data Uji
+└── 📂 archive/             # Backup file & log lama
 
 ## 🔍 Vane AI Search Integration
 
@@ -279,6 +278,14 @@ Task Execution
 | Tool | Deskripsi |
 |------|-----------|
 | `run_shell` | Execute safe shell commands (ls, pwd, git, dll) |
+
+### Semantic Code & Editing (Serena)
+| Tool | Deskripsi |
+|------|-----------|
+| `find_symbol` | Temukan lokasi presisi sebuah fungsi/kelas secara semantik |
+| `find_referencing_symbols` | Cari seluruh pemanggil/referensi fungsi dalam project |
+| `insert_after_symbol` | Sisipkan kode baru tepat di bawah struktur simbol |
+| `replace_symbol` | Ganti langsung blok simbol tanpa modifikasi manual full-file |
 
 ### Intelligence Operations
 | Tool | Deskripsi |

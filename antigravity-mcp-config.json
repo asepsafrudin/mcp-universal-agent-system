@@ -18,6 +18,29 @@
                 "MEMORY_MODE": "enabled"
             },
             "description": "MCP Unified Server - Tools for memory, scheduler, and integrations"
+        },
+        "serena": {
+            "command": "uv",
+            "args": [
+                "run",
+                "serena-mcp-server"
+            ],
+            "env": {
+                "MCP_SERVER_MODE": "true"
+            },
+            "cwd": "/home/aseps/MCP/services/serena",
+            "description": "Serena Semantic Code Tools - Advanced IDE-like capabilities for reading, searching, and editing symbols"
+        },
+        "rust-mcp-filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@rustmcp/rust-mcp-filesystem@latest",
+                "--allow-write",
+                "/home/aseps",
+                "/"
+            ],
+            "description": "High-performance Rust-based MCP Filesystem Server with write access enabled for the entire filesystem"
         }
     },
     "autoStart": true

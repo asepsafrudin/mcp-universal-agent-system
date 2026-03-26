@@ -2,7 +2,7 @@
 import requests
 import json
 
-VANE_URL = "http://localhost:3000"
+VANE_URL = "http://localhost:3001"
 
 # Data dari providers API sebelumnya
 PROVIDER_ID = "6907e68d-cf2e-442a-8a60-8da858f043d2" # Groq

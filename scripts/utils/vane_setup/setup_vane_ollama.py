@@ -7,7 +7,7 @@ import json
 import uuid
 import sys
 
-VANE_URL = "http://localhost:3000"
+VANE_URL = "http://localhost:3001"
 # Docker gateway IP untuk akses Ollama dari dalam container
 OLLAMA_URL_FOR_DOCKER = "http://172.17.0.1:11434"
 
