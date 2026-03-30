@@ -1,12 +1,16 @@
-
 import requests
 import json
+import os
 import uuid
 
 VANE_URL = "http://localhost:3001"
-GROQ_API_KEY = "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"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 def setup():
+    if not GROQ_API_KEY:
+        print("GROQ_API_KEY belum diset. Abort.")
+        return
+
     print("Fetching current config...")
     resp = requests.get(f"{VANE_URL}/api/config")
     config = resp.json()

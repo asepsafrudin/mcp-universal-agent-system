@@ -304,7 +304,7 @@ USING hnsw (embedding vector_cosine_ops);
    ```bash
    # Docker
    docker run -d \
-     -e POSTGRES_PASSWORD=secure123 \
+     -e POSTGRES_PASSWORD=<set-in-centralized-env> \
      -p 5432:5432 \
      ankane/pgvector
    

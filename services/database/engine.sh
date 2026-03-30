@@ -16,6 +16,18 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+POSTGRES_USER="${POSTGRES_USER:-aseps}"
+POSTGRES_DB="${POSTGRES_DB:-mcp}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-}"
+
+require_postgres_password() {
+    if [ -z "$POSTGRES_PASSWORD" ]; then
+        echo -e "${RED}❌ POSTGRES_PASSWORD belum diset.${NC}"
+        echo "Set secret ini di environment terpusat sebelum menjalankan setup database."
+        exit 1
+    fi
+}
+
 # Check Docker availability
 check_docker() {
     if command -v docker &> /dev/null && docker info &> /dev/null; then
@@ -39,14 +51,15 @@ check_os() {
 # Setup dengan Docker
 setup_docker() {
     echo -e "${GREEN}🐳 Mencoba setup dengan Docker...${NC}"
+    require_postgres_password
     
     # PostgreSQL
     echo "📦 Starting PostgreSQL container..."
     if ! docker run -d \
         --name mcp-postgres \
-        -e POSTGRES_USER=aseps \
-        -e POSTGRES_PASSWORD=secure123 \
-        -e POSTGRES_DB=mcp \
+        -e POSTGRES_USER="$POSTGRES_USER" \
+        -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+        -e POSTGRES_DB="$POSTGRES_DB" \
         -p 5432:5432 \
         -v postgres_data:/var/lib/postgresql/data \
         --restart unless-stopped \
@@ -76,7 +89,7 @@ setup_docker() {
     
     # Test connections
     echo "🧪 Testing PostgreSQL connection..."
-    if docker exec mcp-postgres pg_isready -U aseps > /dev/null 2>&1; then
+    if docker exec mcp-postgres pg_isready -U "$POSTGRES_USER" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ PostgreSQL ready${NC}"
     else
         echo -e "${YELLOW}⚠️  PostgreSQL belum ready, mungkin butuh waktu lebih...${NC}"
@@ -91,7 +104,7 @@ setup_docker() {
     
     echo ""
     echo -e "${GREEN}✅ Docker setup berhasil!${NC}"
-    echo "PostgreSQL: localhost:5432 (user: aseps, pass: secure123, db: mcp)"
+    echo "PostgreSQL: localhost:5432 (user: $POSTGRES_USER, password: from env, db: $POSTGRES_DB)"
     echo "Redis: localhost:6379"
     return 0
 }
@@ -99,6 +112,7 @@ setup_docker() {
 # Setup Native
 setup_native() {
     echo -e "${GREEN}🔧 Fallback ke Native Install...${NC}"
+    require_postgres_password
     
     if [ -f /etc/os-release ]; then
         . /etc/os-release
@@ -121,9 +135,9 @@ setup_native() {
         
         # Create database user
         echo "🗄️  Setting up PostgreSQL user..."
-        sudo -u postgres psql -c "CREATE USER aseps WITH PASSWORD 'secure123';" 2>/dev/null || echo "User sudah ada"
-        sudo -u postgres psql -c "CREATE DATABASE mcp OWNER aseps;" 2>/dev/null || echo "Database sudah ada"
-        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE mcp TO aseps;"
+        sudo -u postgres psql -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';" 2>/dev/null || echo "User sudah ada"
+        sudo -u postgres psql -c "CREATE DATABASE $POSTGRES_DB OWNER $POSTGRES_USER;" 2>/dev/null || echo "Database sudah ada"
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
         
         # Configure PostgreSQL untuk local connection
         sudo sed -i 's/scram-sha-256/trust/g' /etc/postgresql/*/main/pg_hba.conf 2>/dev/null || true
@@ -141,8 +155,8 @@ setup_native() {
         sudo systemctl start redis
         
         # Setup database
-        sudo -u postgres psql -c "CREATE USER aseps WITH PASSWORD 'secure123';" 2>/dev/null || true
-        sudo -u postgres psql -c "CREATE DATABASE mcp OWNER aseps;" 2>/dev/null || true
+        sudo -u postgres psql -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';" 2>/dev/null || true
+        sudo -u postgres psql -c "CREATE DATABASE $POSTGRES_DB OWNER $POSTGRES_USER;" 2>/dev/null || true
     else
         echo -e "${RED}❌ OS tidak didukung untuk native install${NC}"
         return 1
@@ -218,10 +232,10 @@ main() {
         echo -e "${GREEN}✅ Database berhasil di-setup!${NC}"
         echo ""
         echo "Environment variables (sudah di .env):"
-        echo "  POSTGRES_USER=aseps"
-        echo "  POSTGRES_PASSWORD=secure123"
+        echo "  POSTGRES_USER=$POSTGRES_USER"
+        echo "  POSTGRES_PASSWORD=<set in centralized env>"
         echo "  POSTGRES_SERVER=localhost"
-        echo "  POSTGRES_DB=mcp"
+        echo "  POSTGRES_DB=$POSTGRES_DB"
         echo "  REDIS_URL=redis://localhost:6379/0"
         echo ""
         echo "Command untuk restart server:"

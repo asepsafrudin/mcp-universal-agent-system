@@ -1,13 +1,17 @@
-
 import requests
 import json
+import os
 import uuid
 
 VANE_URL = "http://localhost:3001"
-GROQ_API_KEY = "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"
-GEMINI_API_KEY = "AIzaSyCm7b-z_acPbex-tthNPcwKKHY3y83xNAg"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 def setup():
+    if not GROQ_API_KEY or not GEMINI_API_KEY:
+        print("GROQ_API_KEY dan GEMINI_API_KEY wajib diset. Abort.")
+        return
+
     print("Fetching current config...")
     resp = requests.get(f"{VANE_URL}/api/config")
     config = resp.json()

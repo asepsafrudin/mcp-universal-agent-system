@@ -6,12 +6,13 @@ Mengawasi pesan masuk ke bot @Asep_mcp_bot
 
 import asyncio
 import json
+import os
 from datetime import datetime
 from telegram import Bot, Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
 # Bot configuration
-BOT_TOKEN = '8242627733:AAF04tGvAB51kRxcJ4CES-QMa6yU_w1hPEw'
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
 async def monitor_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Monitor setiap pesan yang masuk"""
@@ -67,6 +68,10 @@ async def monitor_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     """Main monitoring loop"""
+    if not BOT_TOKEN:
+        print("❌ Set TELEGRAM_BOT_TOKEN terlebih dahulu.")
+        return
+
     print("🚀 Memulai monitor chat Telegram...")
     print(f"🤖 Bot: @Asep_mcp_bot")
     print(f"⏰ Waktu: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

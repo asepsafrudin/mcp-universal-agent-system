@@ -65,7 +65,7 @@ cd /home/aseps/MCP/mcp-unified && ./run.sh
 docker run -d \
     --name mcp-postgres \
     -e POSTGRES_USER=aseps \
-    -e POSTGRES_PASSWORD=secure123 \
+    -e POSTGRES_PASSWORD=<set-in-centralized-env> \
     -e POSTGRES_DB=mcp \
     -p 5432:5432 \
     postgres:15-alpine
@@ -111,7 +111,7 @@ sudo service postgresql start
 sudo service redis-server start
 
 # Create database user
-sudo -u postgres psql -c "CREATE USER aseps WITH PASSWORD 'secure123';"
+sudo -u postgres psql -c "CREATE USER aseps WITH PASSWORD '<set-in-centralized-env>';"
 sudo -u postgres psql -c "CREATE DATABASE mcp OWNER aseps;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE mcp TO aseps;"
 

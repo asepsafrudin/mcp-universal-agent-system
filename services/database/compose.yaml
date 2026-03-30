@@ -3,16 +3,16 @@ services:
     image: postgres:15-alpine
     container_name: mcp-postgres
     environment:
-      - POSTGRES_USER=aseps
-      - POSTGRES_PASSWORD=secure123
-      - POSTGRES_DB=mcp
+      - POSTGRES_USER=${POSTGRES_USER:-aseps}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-mcp}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aseps"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aseps}"]
       interval: 10s
       timeout: 5s
       retries: 5

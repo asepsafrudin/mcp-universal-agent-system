@@ -113,6 +113,24 @@ python3 mcp-unified/integrations/vane_connector.py "query riset"
 
 > ⚠️ **Catatan:** Vane `/api/search` (port 3000) TIDAK digunakan karena lambat (timeout >90s akibat full URL scraping). Connector langsung ke SearxNG port 8090 + Groq API.
 
+## 🔐 Secret Management
+
+Workspace ini sekarang diarahkan ke **single source of truth** untuk secret:
+- Utama: `/home/aseps/MCP/.env`
+- Alternatif lebih aman: file di luar repo melalui `MCP_SECRETS_FILE`
+
+Verifikasi tanpa mengekspos nilai secret:
+
+```bash
+python3 scripts/centralize_secrets_audit.py
+python3 scripts/runtime_secret_check.py
+```
+
+Praktik yang direkomendasikan:
+- Jangan duplikasi secret yang sama di `mcp-unified/.env` dan `mcp-unified/integrations/telegram/.env`
+- Gunakan satu key per tool/environment bila memungkinkan
+- Rotasi manual untuk key yang pernah tersimpan literal di repo atau helper script
+
 ---
 
 ## 🔄 Workflow Sistem

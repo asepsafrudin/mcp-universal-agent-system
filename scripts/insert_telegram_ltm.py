@@ -17,7 +17,7 @@ DB_CONFIG = {
     "port": os.getenv("POSTGRES_PORT", "5433"),
     "database": os.getenv("POSTGRES_DB", "mcp_knowledge"),
     "user": os.getenv("POSTGRES_USER", "mcp_user"),
-    "password": os.getenv("POSTGRES_PASSWORD", "mcp_password_2024")
+    "password": os.getenv("POSTGRES_PASSWORD", "")
 }
 
 LTM_FILE = Path("/home/aseps/MCP/.ltm_memory.json")

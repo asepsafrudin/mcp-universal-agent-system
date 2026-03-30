@@ -1,17 +1,36 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import copy
 from dataclasses import asdict, dataclass
 from enum import Enum
+from pathlib import Path
 
 from anthropic.types import MessageParam, MessageTokensCount
 from dotenv import load_dotenv
 
 log = logging.getLogger(__name__)
+
+
+def _load_workspace_secrets() -> None:
+    secrets_file = os.getenv("MCP_SECRETS_FILE")
+    if secrets_file:
+        load_dotenv(secrets_file)
+        return
+
+    repo_root = Path(__file__).resolve().parents[4]
+    candidates = [
+        repo_root / ".env",
+        repo_root / "services" / "serena" / ".env",
+    ]
+    for path in candidates:
+        if path.exists():
+            load_dotenv(path)
+            break
 
 
 class TokenCountEstimator(ABC):
@@ -56,7 +75,7 @@ class AnthropicTokenCount(TokenCountEstimator):
 
         self._model_name = model_name
         if api_key is None:
-            load_dotenv()
+            _load_workspace_secrets()
         self._anthropic_client = anthropic.Anthropic(api_key=api_key)
 
     def _send_count_tokens_request(self, text: str) -> MessageTokensCount:

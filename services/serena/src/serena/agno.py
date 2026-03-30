@@ -22,6 +22,23 @@ from serena.util.exception import show_fatal_exception_safe
 log = logging.getLogger(__name__)
 
 
+def _load_workspace_secrets() -> None:
+    secrets_file = os.getenv("MCP_SECRETS_FILE")
+    if secrets_file:
+        load_dotenv(secrets_file)
+        return
+
+    repo_root = Path(REPO_ROOT).resolve()
+    candidates = [
+        repo_root.parents[2] / ".env",
+        repo_root / ".env",
+    ]
+    for path in candidates:
+        if path.exists():
+            load_dotenv(path)
+            break
+
+
 class SerenaAgnoToolkit(Toolkit):
     def __init__(self, serena_agent: SerenaAgent):
         super().__init__("Serena")
@@ -68,7 +85,7 @@ class SerenaAgnoAgentProvider:
             # change to Serena root
             os.chdir(REPO_ROOT)
 
-            load_dotenv()
+            _load_workspace_secrets()
 
             parser = argparse.ArgumentParser(description="Serena coding assistant")
 

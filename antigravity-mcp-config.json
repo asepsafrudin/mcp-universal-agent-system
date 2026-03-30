@@ -37,10 +37,9 @@
                 "-y",
                 "@rustmcp/rust-mcp-filesystem@latest",
                 "--allow-write",
-                "/home/aseps",
-                "/"
+                "/home/aseps/MCP"
             ],
-            "description": "High-performance Rust-based MCP Filesystem Server with write access enabled for the entire filesystem"
+            "description": "High-performance Rust-based MCP Filesystem Server with write access limited to /home/aseps/MCP"
         }
     },
     "autoStart": true

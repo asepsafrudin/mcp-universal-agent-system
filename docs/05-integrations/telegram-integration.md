@@ -1,12 +1,18 @@
 # 🤖 Telegram Bot Integration
 
-Integrasi lengkap Telegram Bot dengan MCP Server untuk komunikasi two-way antara user Telegram dan AI.
+Integrasi Telegram Bot untuk komunikasi two-way antara user Telegram dan AI.
+
+Catatan arsitektur terbaru:
+- Bot chat Telegram utama sekarang berjalan lewat `run.py` dan `bot.py`.
+- Konteks percakapan bot Telegram dipisahkan dari memory agent/LTM/knowledge.
+- Bridge agent dan SQL bot diperlakukan sebagai jalur terpisah, bukan konteks default chat.
+- Entry point legacy diarsipkan ke folder `integrations/telegram/legacy/`.
 
 ## 📋 Overview
 
 Integrasi ini menyediakan dua komponen utama:
 
-1. **Telegram Bot Server** - Menerima pesan dari Telegram dan meneruskannya ke MCP
+1. **Telegram Bot** - Menerima pesan dari Telegram dan memproses chat operasional
 2. **Telegram Tool** - Mengirim notifikasi dan pesan dari MCP ke Telegram
 
 ## 🏗️ Arsitektur
@@ -40,8 +46,8 @@ Integrasi ini menyediakan dua komponen utama:
 mcp-unified/
 ├── integrations/
 │   └── telegram/
-│       ├── bot_server.py       # Main bot server
-│       ├── setup.py            # Setup script
+│       ├── bot.py              # Main Telegram bot class
+│       ├── run.py              # Entry point bot utama
 │       ├── run.sh              # Runner script
 │       ├── .env.example        # Config template
 │       └── README.md           # Documentation
@@ -55,17 +61,11 @@ mcp-unified/
 
 ## 🚀 Quick Start
 
-### 1. Setup Bot
+### 1. Konfigurasi Token
 
+Edit secret source terpusat:
 ```bash
-cd mcp-unified/integrations/telegram
-python setup.py
-```
-
-### 2. Konfigurasi Token
-
-Edit `.env` file:
-```bash
+cd /home/aseps/MCP
 nano .env
 ```
 
@@ -75,13 +75,18 @@ TELEGRAM_BOT_TOKEN=your_bot_token_here
 TELEGRAM_MODE=polling
 ```
 
-### 3. Jalankan Bot
+Rekomendasi:
+- Gunakan root `.env` sebagai source of truth tunggal.
+- Alternatif yang lebih aman: simpan file di luar repo lalu set `MCP_SECRETS_FILE=/absolute/path/to/secrets.env`.
+- Hindari menduplikasi secret yang sama di `mcp-unified/.env` dan `integrations/telegram/.env`.
+
+### 2. Jalankan Bot
 
 ```bash
 ./run.sh
 ```
 
-### 4. Test
+### 3. Test
 
 1. Buka bot Anda di Telegram
 2. Kirim `/start`
@@ -177,7 +182,7 @@ result = await telegram_tool.execute(task)
 
 ### User Whitelist
 
-Tambahkan di `.env`:
+Tambahkan di secret source terpusat:
 ```env
 TELEGRAM_ALLOWED_USERS=123456789,987654321
 ```
@@ -220,26 +225,19 @@ Test token:
 curl "https://api.telegram.org/bot<TOKEN>/getMe"
 ```
 
-## 🔮 Integrasi dengan AI (Future)
+### Audit Migrasi Ke Secret Tunggal
 
-Untuk integrasi penuh dengan AI, modifikasi `process_message()` di `bot_server.py`:
-
-```python
-async def process_message(self, user_id: int, message: str) -> str:
-    # Kirim ke MCP AI untuk diproses
-    task = Task(
-        type="chat_completion",
-        payload={
-            "message": message,
-            "user_id": user_id,
-            "context": self.user_sessions[user_id].get("context", [])
-        }
-    )
-    
-    # Proses melalui AI
-    result = await self.mcp_client.process_task(task)
-    return result.content
+```bash
+python3 scripts/centralize_secrets_audit.py
+python3 scripts/runtime_secret_check.py telegram
 ```
+
+## 🔮 Catatan Integrasi AI
+
+Bot chat utama sekarang sengaja dibuat tipis:
+- chat Telegram memakai konteks lokal bot
+- bridge agent tetap eksplisit
+- SQL/knowledge bot dipisahkan ke service terdedikasi bila dibutuhkan
 
 ## 📚 Referensi
 

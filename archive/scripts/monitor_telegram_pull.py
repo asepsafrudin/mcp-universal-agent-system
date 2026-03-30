@@ -6,13 +6,14 @@ Tidak konflik dengan MCP Server yang sedang berjalan
 
 import asyncio
 import json
+import os
 import time
 from datetime import datetime
 from telegram import Bot
 
 # Bot configuration
-BOT_TOKEN = '8242627733:AAF04tGvAB51kRxcJ4CES-QMa6yU_w1hPEw'
-CHAT_ID = 1223948041
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 async def check_updates(bot: Bot, last_update_id: int = 0):
     """Cek update dari Telegram"""
@@ -60,6 +61,10 @@ async def check_updates(bot: Bot, last_update_id: int = 0):
 
 async def monitor_loop():
     """Loop monitoring"""
+    if not BOT_TOKEN:
+        print("❌ Set TELEGRAM_BOT_TOKEN terlebih dahulu.")
+        return
+
     bot = Bot(token=BOT_TOKEN)
     last_update_id = 0
     message_count = 0

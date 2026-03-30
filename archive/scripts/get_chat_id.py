@@ -4,13 +4,17 @@ Get Chat ID from bot updates
 """
 
 import asyncio
+import os
 from telegram import Bot
 
-BOT_TOKEN = '8242627733:AAF04tGvAB51kRxcJ4CES-QMa6yU_w1hPEw'
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
 async def get_chat_id():
     """Get chat ID from recent bot updates"""
     try:
+        if not BOT_TOKEN:
+            print("❌ Set TELEGRAM_BOT_TOKEN terlebih dahulu.")
+            return None
         bot = Bot(token=BOT_TOKEN)
         updates = await bot.get_updates()
         

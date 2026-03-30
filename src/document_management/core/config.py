@@ -32,7 +32,7 @@ POSTGRES_CONFIG = {
     'port': int(os.getenv('POSTGRES_PORT', '5433')),
     'database': os.getenv('POSTGRES_DB', 'mcp_knowledge'),
     'user': os.getenv('POSTGRES_USER', 'mcp_user'),
-    'password': os.getenv('POSTGRES_PASSWORD', 'mcp_password_2024'),
+    'password': os.getenv('POSTGRES_PASSWORD', ''),
     'table': 'unified_documents'
 }
 

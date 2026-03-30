@@ -37,7 +37,7 @@ DB_CONFIG = {
     "port": os.getenv("POSTGRES_PORT", "5432"),
     "database": os.getenv("POSTGRES_DB", "mcp"),
     "user": os.getenv("POSTGRES_USER", "aseps"),
-    "password": os.getenv("POSTGRES_PASSWORD", "secure123")
+    "password": os.getenv("POSTGRES_PASSWORD", "")
 }
 
 TASKS_DIR = Path("/home/aseps/MCP/tasks")
