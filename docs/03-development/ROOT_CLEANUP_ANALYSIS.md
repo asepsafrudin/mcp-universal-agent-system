@@ -198,3 +198,13 @@ User tidak tahu harus:
 - Kurangnya dokumentasi cara start yang benar
 
 **Rekomendasi:** Prioritaskan P0 (path fix & duplikat) untuk segera mengurangi kebingungan.
+
+
+---
+## Update 2026-03-30 (Automated Root Cleanup)
+- Root export files `extraction_*.json` dipindahkan ke `archive/reports/`.
+- `project_knowledge_bootstrap.json` dipindahkan ke `data/input/bootstrap/`.
+- Config lokal root (`antigravity-mcp-config.json`, `cline_mcp_settings.json`) dipindahkan ke `config/local/`.
+- Virtualenv legacy `venv/` dipindahkan ke `archive/runtime/root_exports/venv_legacy`; standard aktif: `.venv/`.
+
+Catatan: update referensi path yang masih menunjuk lokasi lama bila ditemukan pada script/tooling.

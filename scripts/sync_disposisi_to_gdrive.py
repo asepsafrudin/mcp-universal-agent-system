@@ -27,8 +27,10 @@ load_runtime_secrets()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("sync_disposisi")
 
-TOKEN_FILE         = "/home/aseps/MCP/config/credentials/google/puubangda/token.json"
-CLIENT_SECRET_FILE = "/home/aseps/MCP/config/credentials/google/puubangda/client_secret.json"
+# Use OAuth2 credentials from puubangda folder with proper token support
+CREDENTIALS_DIR = "/home/aseps/MCP/config/credentials/google/puubangda"
+CLIENT_SECRET_FILE = os.path.join(CREDENTIALS_DIR, "client_secret.json")
+TOKEN_FILE = os.path.join(CREDENTIALS_DIR, "token.json")
 
 SCOPES = [
     "https://www.googleapis.com/auth/drive.file",
@@ -37,11 +39,18 @@ SCOPES = [
 
 
 def get_drive_service():
-    """Buat Drive service menggunakan OAuth2 user credentials (bukan SA)."""
+    """Buat Drive service menggunakan OAuth2 user credentials (puubangda)."""
     import json
     from google.oauth2.credentials import Credentials
     from google.auth.transport.requests import Request
     from googleapiclient.discovery import build
+
+    if not os.path.exists(TOKEN_FILE):
+        raise FileNotFoundError(
+            f"Token file not found: {TOKEN_FILE}\n"
+            "Run: python3 scripts/reauth_google_drive.py\n"
+            "Then re-run this sync script."
+        )
 
     with open(TOKEN_FILE) as f:
         tok = json.load(f)
@@ -53,18 +62,19 @@ def get_drive_service():
         token=tok.get("token"),
         refresh_token=tok.get("refresh_token"),
         token_uri=tok.get("token_uri", "https://oauth2.googleapis.com/token"),
-        client_id=web.get("client_id"),
-        client_secret=web.get("client_secret"),
+        client_id=web.get("client_id", tok.get("client_id")),
+        client_secret=web.get("client_secret", tok.get("client_secret")),
         scopes=tok.get("scopes", SCOPES),
     )
     if creds.expired and creds.refresh_token:
         log.info("Refreshing OAuth2 token...")
         creds.refresh(Request())
-        # Simpan token yang sudah diperbarui
-        import json as _json
+        # Save updated token
         new_tok = {**tok, "token": creds.token}
+        new_tok.setdefault("client_id", web.get("client_id"))
+        new_tok.setdefault("client_secret", web.get("client_secret"))
         with open(TOKEN_FILE, "w") as f:
-            _json.dump(new_tok, f, indent=2)
+            json.dump(new_tok, f, indent=2)
 
     return build("drive", "v3", credentials=creds, cache_discovery=False)
 
