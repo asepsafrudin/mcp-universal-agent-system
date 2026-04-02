@@ -65,5 +65,9 @@ venv/
 .vscode/
 ocr_cache/
 processed/
+
+# Artefak produksi di root repo (canonical: storage/reports/extractions/)
+/extraction_*.json
+
 *.json
 .ltm_memory.json

@@ -120,6 +120,35 @@ graph TB
 
 ---
 
+## 🔒 Mandatory BLACKBOX Policy (AI Agent - `mcp/`)
+
+Kebijakan ini **wajib** untuk semua AI agent yang bekerja pada scope `mcp/`.
+
+### Cakupan
+- Berlaku untuk seluruh aktivitas AI agent terkait `mcp/`
+- Mencakup analisis, perencanaan, perubahan file, validasi, dan pelaporan hasil
+
+### Aturan Wajib
+1. AI agent **harus** menggunakan workflow BLACKBOX secara penuh:
+   - memahami task
+   - menelusuri file relevan
+   - membaca konteks file
+   - menyusun plan
+   - meminta konfirmasi sebelum edit
+   - melakukan perubahan bertahap
+   - melaporkan hasil akhir
+2. Setiap perubahan pada dokumentasi/kode di area `mcp/` harus terdokumentasi jelas.
+3. Tidak boleh melakukan perubahan langsung tanpa rencana yang terkonfirmasi.
+4. Wajib menjaga konsistensi struktur dokumentasi dan standar teknis project.
+5. Wajib menjaga kebersihan root `mcp/` agar tidak ada file residu; setiap file harus ditempatkan pada folder yang semestinya sesuai struktur project.
+
+### Checklist Kepatuhan
+- [ ] Task dipahami dan ruang lingkup `mcp/` tervalidasi
+- [ ] File relevan ditemukan dan dibaca
+- [ ] Plan perubahan disusun dan dikonfirmasi
+- [ ] Implementasi mengikuti plan
+- [ ] Hasil akhir dilaporkan dengan ringkas dan teknis
+
 ## 🤝 Kontribusi
 
 Dokumentasi ini menggunakan struktur numerik prefix:

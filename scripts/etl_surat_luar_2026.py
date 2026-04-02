@@ -611,6 +611,36 @@ def run_etl() -> None:
         stats = process_disposisi_distributions(conn, SHEET_DISPO_SES, "Dispo Ses")
         total_stats["dispo_ses"] = stats
 
+        # 5. Filter & Populate 'surat_untuk_substansi_puu' (Handled duplicates)
+        log.info("Filtering Master data for Substansi PUU priority...")
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO surat_untuk_substansi_puu (
+                surat_id, agenda, surat_dari, nomor_surat, 
+                isi_disposisi, disposisi_kepada, status, created_at, updated_at
+            )
+            SELECT DISTINCT ON (s.id)
+                s.id, 
+                s.agenda_ula, 
+                s.surat_dari, 
+                s.nomor_surat, 
+                d.isi_disposisi,
+                d.kepada,
+                'Baru',
+                NOW(),
+                NOW()
+            FROM surat_dari_luar_bangda s
+            JOIN disposisi_distributions d ON s.agenda_ula = d.nomor_disposisi
+            WHERE d.kepada ILIKE '%PUU%'
+              AND s.tgl_surat >= '2026-01-01'
+            ORDER BY s.id, d.id DESC
+            ON CONFLICT (surat_id) DO UPDATE SET
+                isi_disposisi = EXCLUDED.isi_disposisi,
+                disposisi_kepada = EXCLUDED.disposisi_kepada,
+                updated_at = NOW()
+        """)
+        log.info("Substansi PUU priority table updated successfully.")
+
         # Commit all changes
         conn.commit()
 

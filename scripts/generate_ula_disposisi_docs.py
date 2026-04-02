@@ -141,25 +141,26 @@ def run_generate(dry_run: bool = False, limit: int = 0) -> None:
             # Get surat with disposisi
             query = """
                 SELECT
-                    sk.id,
-                    sk.unique_id,
-                    sk.agenda_ula,
-                    sk.surat_dari,
-                    sk.nomor_surat,
-                    sk.tgl_surat,
-                    sk.tgl_diterima_ula,
-                    sk.perihal,
-                    sk.arahan_menteri,
-                    sk.arahan_sekjen,
-                    sk.status_mailmerge,
-                    ld.dari_disposisi,
-                    ld.perihal_disposisi,
-                    ld.nomor_disposisi
-                FROM surat_keluar_ula sk
-                LEFT JOIN lembar_disposisi_ula ld 
-                    ON ld.unique_id LIKE '%' || sk.agenda_ula || '%'
-                WHERE sk.agenda_ula IS NOT NULL
-                ORDER BY sk.id
+                    s.id,
+                    s.unique_id,
+                    s.agenda_ula,
+                    s.surat_dari,
+                    s.nomor_surat,
+                    s.tgl_surat,
+                    s.tgl_diterima_ula,
+                    s.perihal,
+                    s.arahan_menteri,
+                    s.arahan_sekjen,
+                    s.status_mailmerge,
+                    l.dari_disposisi,
+                    l.perihal_disposisi,
+                    l.nomor_disposisi,
+                    l.tanggal_disposisi
+                FROM surat_dari_luar_bangda s
+                LEFT JOIN lembar_disposisi_bangda l 
+                    ON l.nomor_disposisi = s.agenda_ula
+                WHERE s.agenda_ula IS NOT NULL
+                ORDER BY s.id
             """
             if limit > 0:
                 query += f" LIMIT {limit}"
@@ -220,11 +221,12 @@ def run_generate(dry_run: bool = False, limit: int = 0) -> None:
                 with open(local_path, "wb") as f:
                     f.write(docx_bytes)
                 
-                # Update DB dengan file path
+                # Update DB dengan status
                 with conn.cursor() as cur2:
                     cur2.execute("""
-                        UPDATE surat_keluar_ula
-                        SET updated_at = NOW()
+                        UPDATE surat_dari_luar_bangda
+                        SET status_mailmerge = 'generated',
+                            updated_at = NOW()
                         WHERE id = %s
                     """, (row['id'],))
                 conn.commit()
