@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "mcp-unified": {
+      "command": "python3",
+      "args": [
+        "/home/aseps/MCP/mcp-unified/mcp_server.py"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "memory_save",
+        "memory_search",
+        "memory_list",
+        "knowledge_search"
+      ]
+    },
+    "mcp-unified-sse": {
+      "command": "python3",
+      "args": [
+        "/home/aseps/MCP/mcp-unified/mcp_server_sse.py"
+      ],
+      "disabled": true,
+      "autoApprove": [
+        "memory_save",
+        "memory_search",
+        "memory_list"
+      ]
+    }
+  }
+}

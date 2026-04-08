@@ -1,0 +1,24 @@
++ # API Keys and Secrets
++ .env
++
++ # Python
++ __pycache__/
++ *.py[cod]
++ *$py.class
++ *.egg-info/
++ dist/
++ build/
++ venv/
++
++ # Extracted data
++ arsip-extracted/
++ arsip-2025/
++ test-arsip/
++
++ # Test results
++ test_gcv_*.txt
++ test_result_*.json
++
++ # OS
++ .DS_Store
++ Thumbs.db

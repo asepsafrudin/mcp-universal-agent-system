@@ -1,0 +1,25 @@
+{
+    "last_updated": "2026-03-12T14:41:00Z",
+    "structure_version": "2.0",
+    "active_tasks": [
+        {
+            "id": "TASK-002",
+            "title": "Legal Agent Enhancement",
+            "file": "tasks/01_active/TASK-002-legal-agent-enhancement.md",
+            "progress": "50%"
+        },
+        {
+            "id": "TASK-033",
+            "title": "Multi-Talent Expansion (Google, WA, App Dev)",
+            "file": "tasks/01_active/TASK-033-multi-talent-expansion.md",
+            "progress": "0%"
+        }
+    ],
+    "directories": {
+        "01_active": "Tugas yang sedang dalam pengerjaan",
+        "02_completed": "Tugas yang selesai dalam sprint/versi ini",
+        "03_archive": "Arsip tugas historis",
+        "04_backlog": "Daftar rencana tugas mendatang",
+        "05_status_reports": "Laporan status berkala"
+    }
+}

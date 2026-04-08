@@ -1,0 +1,3 @@
+[submodule "korespondensi-server"]
+	path = korespondensi-server
+	url = https://github.com/asepsafrudin/pusat-korespondensi.git

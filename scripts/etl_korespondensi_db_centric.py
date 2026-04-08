@@ -10,7 +10,7 @@ Flow:
   1. Baca korespondensi_source_config dari DB
   2. Fetch data tiap sheet via Google Sheets API
   3. Normalisasi + dedupe → korespondensi_raw_pool (UPSERT)
-  4. Filter is_puu (DARI atau POSISI mengandung 'PUU') → surat_masuk_puu (UPSERT)
+  4. Filter is_puu (DARI atau POSISI mengandung 'PUU') → surat_masuk_puu_internal (UPSERT)
   5. Ekstrak no_agenda_dispo dari kolom DISPOSISI via regex
   6. Log hasil ke korespondensi_sync_runs
 
@@ -141,6 +141,23 @@ def parse_date(val: Any) -> Optional[date]:
     return None
 
 
+def parse_posisi_date(posisi_str: str, fallback_year: int = 2026) -> Optional[datetime]:
+    """Ekstrak tanggal dari string posisi (mis: 'PUU 17/3' -> 2026-03-17)."""
+    if not posisi_str:
+        return None
+    # Cari pola dd/mm atau dd/m atau d/m (mis: 17/3, 2/4)
+    m = re.search(r'(\d{1,2})\s*/\s*(\d{1,2})', posisi_str)
+    if m:
+        try:
+            day, month = int(m.group(1)), int(m.group(2))
+            # Sesuaikan tahun jika Desember -> 2025
+            year = fallback_year - 1 if month == 12 else fallback_year
+            return datetime(year, month, day)
+        except (ValueError, TypeError):
+            pass
+    return None
+
+
 def make_unique_id(no_agenda: str, nomor_nd: str) -> str:
     """
     Buat ID stabil dari gabungan NO AGENDA + NOMOR ND.
@@ -176,22 +193,26 @@ def is_surat_keluar_puu(nomor_nd: str) -> bool:
     return bool(_r.search(r'/\s*PUU\s*$', nomor_nd.strip(), _r.IGNORECASE))
 
 
-def is_puu_row(dari: str, posisi: str, nomor_nd: str = "") -> Tuple[bool, str, bool]:
+def is_puu_row(dari: str, posisi: str, nomor_nd: str = "", disposisi: str = "") -> Tuple[bool, str, bool]:
     """
-    Tentukan apakah baris ini masuk kategori PUU.
-    
-    Return:
-        (is_surat_masuk, reason, is_surat_keluar)
-        - is_surat_masuk = True jika surat masuk PUU (POSISI mengandung PUU)
-        - is_surat_keluar = True jika surat keluar PUU (NOMOR ND berakhiran /PUU)
+    Tentukan apakah baris ini masuk kategori PUU berdasarkan kondisi ketat:
+    1. Surat Keluar: ND berakhiran /PUU
+    2. Surat Masuk: disposisi memuat format REG \d{3,4}/.+/\d{4} & posisi mengandung 'PUU.*?\d{1,2}/\d{1,2}'
     """
     import re as _r
     # Cek surat keluar PUU
     if _r.search(r'/\s*PUU\s*$', nomor_nd.strip(), _r.IGNORECASE):
         return False, f"surat keluar PUU (nomor ND berakhiran /PUU): {nomor_nd}", True
+    
     posisi_up = (posisi or "").upper()
-    if "PUU" in posisi_up:
-        return True, f"POSISI mengandung PUU: {posisi}", False
+    disposisi_up = (disposisi or "").upper()
+    
+    is_valid_reg = bool(_r.search(r'\d{3,4}/.+/\d{4}', disposisi_up))
+    is_valid_posisi = bool(_r.search(r'PUU.*?\d{1,2}/\d{1,2}', posisi_up))
+    
+    if is_valid_reg and is_valid_posisi:
+        return True, f"POSISI & REG (Disposisi) valid PUU", False
+        
     return False, "", False
 
 
@@ -333,13 +354,19 @@ def process_source(
             )
             row_result = cur.fetchone()
             raw_id, is_insert = row_result[0], row_result[1]
+            
+            # Check for position change to log in timeline
+            cur.execute("SELECT posisi FROM surat_masuk_puu_internal WHERE unique_id = %s", (unique_id,))
+            old_internal = cur.fetchone()
+            old_posisi = old_internal[0] if old_internal else None
+            
             if is_insert:
                 stats["inserted_raw"] += 1
             else:
                 stats["updated_raw"] += 1
 
             # Check if surat masuk or keluar PUU
-            is_masuk, reason, is_keluar = is_puu_row(dari_val, posisi_val, nomor_nd_raw)
+            is_masuk, reason, is_keluar = is_puu_row(dari_val, posisi_val, nomor_nd_raw, disposisi_val)
             
             # Handle surat keluar PUU (NOMOR ND ending with /PUU)
             if is_keluar:
@@ -382,34 +409,50 @@ def process_source(
                     except (ValueError, TypeError):
                         pass
 
-            # Upsert ke surat_masuk_puu (termasuk dari_full dan tanggal_diterima_puu)
+            # Upsert ke surat_masuk_puu_internal (termasuk dari_full dan tanggal_diterima_puu)
             cur.execute(
                 """
-                INSERT INTO surat_masuk_puu (
+                INSERT INTO surat_masuk_puu_internal (
                     unique_id, tanggal_surat, nomor_nd,
                     dari, dari_full, hal, no_agenda_dispo,
-                    is_puu, filter_reason, raw_pool_id, tanggal_diterima_puu
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,TRUE,%s,%s,%s)
+                    is_puu, filter_reason, raw_pool_id, tanggal_diterima_puu,
+                    posisi
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,TRUE,%s,%s,%s,%s)
                 ON CONFLICT (unique_id) DO UPDATE SET
                     tanggal_surat    = EXCLUDED.tanggal_surat,
                     nomor_nd         = EXCLUDED.nomor_nd,
                     dari             = EXCLUDED.dari,
                     dari_full        = EXCLUDED.dari_full,
                     hal              = EXCLUDED.hal,
-                    no_agenda_dispo  = COALESCE(EXCLUDED.no_agenda_dispo, surat_masuk_puu.no_agenda_dispo),
+                    no_agenda_dispo  = COALESCE(EXCLUDED.no_agenda_dispo, surat_masuk_puu_internal.no_agenda_dispo),
                     filter_reason    = EXCLUDED.filter_reason,
                     raw_pool_id      = EXCLUDED.raw_pool_id,
-                    tanggal_diterima_puu = COALESCE(EXCLUDED.tanggal_diterima_puu, surat_masuk_puu.tanggal_diterima_puu),
+                    tanggal_diterima_puu = COALESCE(EXCLUDED.tanggal_diterima_puu, surat_masuk_puu_internal.tanggal_diterima_puu),
+                    posisi           = EXCLUDED.posisi,
                     updated_at       = NOW()
+                RETURNING id
                 """,
                 (
                     unique_id,
                     tanggal.isoformat() if tanggal else None,
                     nomor_nd_raw, dari_val, dari_full_val, hal_val,
                     no_agenda_dispo, reason, raw_id,
-                    tanggal_diterima_puu.isoformat() if tanggal_diterima_puu else None
+                    tanggal_diterima_puu.isoformat() if tanggal_diterima_puu else None,
+                    posisi_val
                 )
             )
+            internal_id = cur.fetchone()[0]
+            
+            # Log to timeline if position changed
+            if old_posisi != posisi_val:
+                extracted_dt = parse_posisi_date(posisi_val)
+                event_time = extracted_dt if extracted_dt else datetime.now()
+                
+                cur.execute("""
+                    INSERT INTO correspondence_events (letter_id, event_type, event_value, event_at)
+                    VALUES (%s, 'posisi_change', %s, %s)
+                """, (internal_id, posisi_val, event_time))
+                log.info("[%s] Timeline update: %s -> %s (extracted_at=%s)", unique_id, old_posisi, posisi_val, event_time)
             stats["surat_puu"] += 1
 
     return stats
@@ -463,7 +506,7 @@ def run_etl() -> None:
                     (stats["total"], unit_name)
                 )
 
-        # Auto-populate lembar_disposisi dari surat_masuk_puu + raw_pool
+        # Auto-populate lembar_disposisi dari surat_masuk_puu_internal + raw_pool
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO lembar_disposisi (surat_id, unique_id, agenda_puu, direktorat)
@@ -480,7 +523,7 @@ def run_etl() -> None:
                         WHEN 'SUPD IV'     THEN 'Direktorat SUPD IV'
                         ELSE rp.source_sheet_name
                     END
-                FROM surat_masuk_puu sp
+                FROM surat_masuk_puu_internal sp
                 JOIN korespondensi_raw_pool rp ON rp.id = sp.raw_pool_id
                 ON CONFLICT (unique_id) DO UPDATE SET
                     direktorat = EXCLUDED.direktorat,
