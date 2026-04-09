@@ -60,33 +60,35 @@ Project ini terdiri dari 3 komponen utama:
 
 ```mermaid
 graph TB
-    subgraph "CrewAI System"
-        A[Researcher Agent]
-        B[Writer Agent]
-        C[Checker Agent]
+    subgraph "External Interface"
+        Z[Agentic IDE / Client]
+    end
+
+    subgraph "Universal Gateway (Port 8000)"
+        Gateway[Starlette Proxy Hub]
     end
     
-    subgraph "MCP Sub-Agent"
-        D[Planning Engine]
-        E[Execution Scheduler]
-        F[Specialized Agents]
+    subgraph "Internal Services"
+        MCP[MCP Unified Port 8000]
+        KOR[Korespondensi Port 8082]
+        VANE[Vane Search Port 3001]
+        WAHA[WhatsApp Port 3000]
     end
     
-    subgraph "Shared Layer"
-        G[mcp_client.py]
+    subgraph "Storage & Intelligence"
+        DB[(PostgreSQL + pgvector)]
+        REDIS[(Redis Cache)]
     end
     
-    subgraph "MCP Memory Server"
-        H[FastAPI Server]
-        I[PostgreSQL + pgvector]
-    end
+    Z --> Gateway
+    Gateway -- "/sse" --> MCP
+    Gateway -- "/services/kor" --> KOR
+    Gateway -- "/services/vane" --> VANE
+    Gateway -- "/services/waha" --> WAHA
     
-    A & B & C --> G
-    D --> E
-    E --> F
-    F --> G
-    G --> H
-    H --> I
+    MCP --> DB
+    MCP --> REDIS
+    KOR --> DB
 ```
 
 ## Data Flow

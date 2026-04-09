@@ -14,12 +14,14 @@ Proyek ini adalah implementasi **MCP (Model Context Protocol)** yang menyediakan
 - **Distributed Execution** untuk skalasi horizontal
 - **Self-Healing Capabilities** untuk recovery otomatis
 - **Task Scheduler** untuk eksekusi tugas terjadwal
+- **🆕 Universal Gateway (Port 8000)** — Satu titik akses untuk semua layanan internal (mcp, vane, korespondensi, waha)
 - **Integration dengan Antigravity IDE** dan IDE lainnya
 
 ## 📁 Struktur Direktori
 
 /home/aseps/MCP/
-├── 📂 mcp-unified/         # Universal MCP Server & Core Logic
+├── 📂 mcp-unified/         # Universal MCP Server & Central Gateway (Port 8000)
+├── 📂 korespondensi-server/ # Sistem Korespondensi PUU Hub (Internal Hub)
 ├── 📂 serena/              # Serena Semantic Coding Agent Toolkit
 ├── 📂 data/                # Data storage (input, processed, mcp-data, dll)
 ├── 📂 config/              # Kredensial & Konfigurasi Eksternal
@@ -138,9 +140,17 @@ Praktik yang direkomendasikan:
 ### 1. High-Level Interaction Flow
 
 ```
-┌─────────┐     ┌─────────────┐     ┌─────────────────┐
-│  User   │────▶│ Agent/IDE   │────▶│  MCP Server     │
-└─────────┘     └─────────────┘     └─────────────────┘
+┌─────────┐     ┌─────────────┐     ┌──────────────────────┐
+│  User   │────▶│ Agent/IDE   │────▶│  Universal Gateway   │ (Port 8000)
+└─────────┘     └─────────────┘     └──────────┬───────────┘
+                                               │
+               ┌───────────────────────────────┼───────────────────────────────┐
+               │                               │                               │
+               ▼                               ▼                               ▼
+      ┌─────────────────┐             ┌─────────────────┐             ┌─────────────────┐
+      │  MCP Unified    │             │ Korespondensi   │             │   Vane / WAHA   │
+      │  (/sse)         │             │ (/services/kor) │             │ (/services/...) │
+      └─────────────────┘             └─────────────────┘             └─────────────────┘
                                              │
                     ┌────────────────────────┼────────────────────────┐
                     │                        │                        │
@@ -430,7 +440,23 @@ source /home/aseps/MCP/init_session.sh
 
 ```bash
 cd /home/aseps/MCP/mcp-unified
+sudo systemctl start mcp-unified  # Direkomendasikan (Persistent)
+# Atau manual:
 bash run.sh
+```
+
+### 🆕 Unified Port Mapping
+
+Sistem kini menggunakan **Universal Gateway** pada port **8000** sebagai entrypoint tunggal:
+
+| Endpoint | Target Internal | Deskripsi |
+|----------|-----------------|-----------|
+| `http://localhost:8000/` | - | Root Gateway |
+| `/health` | MCP Unified | Status kesehatan hub |
+| `/sse` | MCP Unified | SSE Transport untuk Agent |
+| `/services/korespondensi/` | Local:8082 | Dashboard Korespondensi |
+| `/services/vane/` | Local:3001 | Vane AI Interface |
+| `/services/waha/` | Local:3000 | WhatsApp Gateway API |
 ```
 
 ### 5. Enable Scheduler (Optional)
