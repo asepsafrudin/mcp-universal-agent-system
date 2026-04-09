@@ -1,0 +1,6 @@
+[tool.pyrefly]
+search_path = [
+    "/home/aseps/MCP/mcp-unified",
+    "/home/aseps/MCP/korespondensi-server/src",
+    "/home/aseps/MCP/services/serena/src"
+]

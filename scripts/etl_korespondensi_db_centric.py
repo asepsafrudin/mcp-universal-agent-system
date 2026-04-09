@@ -32,8 +32,8 @@ import psycopg
 
 PROJECT_ROOT = "/home/aseps/MCP/mcp-unified"
 sys.path.insert(0, PROJECT_ROOT)
-from core.secrets import load_runtime_secrets
-from integrations.korespondensi.utils import extract_puu_received_date
+from core.secrets import load_runtime_secrets  # type: ignore
+from integrations.korespondensi.utils import extract_puu_received_date  # type: ignore
 
 load_runtime_secrets()
 
@@ -218,7 +218,7 @@ def is_puu_row(dari: str, posisi: str, nomor_nd: str = "", disposisi: str = "") 
 
 def fetch_sheet_data(spreadsheet_id: str, sheet_name: str) -> List[List[Any]]:
     """Fetch raw data dari Google Sheets."""
-    from integrations.google_workspace.client import get_google_client
+    from integrations.google_workspace.client import get_google_client  # type: ignore
     client = get_google_client()
     svc = client.sheets
     rng = f"'{sheet_name}'!A1:Z5000"
@@ -435,7 +435,9 @@ def process_source(
                 (
                     unique_id,
                     tanggal.isoformat() if tanggal else None,
-                    nomor_nd_raw, dari_val, dari_full_val, hal_val,
+                    nomor_nd_raw, 
+                    f"{dari_val} - {sheet_name}" if dari_val else sheet_name, 
+                    dari_full_val, hal_val,
                     no_agenda_dispo, reason, raw_id,
                     tanggal_diterima_puu.isoformat() if tanggal_diterima_puu else None,
                     posisi_val

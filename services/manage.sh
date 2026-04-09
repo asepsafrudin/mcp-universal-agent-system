@@ -21,7 +21,7 @@ SERVICES_DIR="$ROOT_DIR/services"
 MCP_DIR="$ROOT_DIR/mcp-unified"
 
 # --- List of managed services ---
-SERVICES=("mcp" "database" "vane" "waha" "serena" "dashboard")
+SERVICES=("mcp" "database" "vane" "waha" "serena" "dashboard" "korespondensi" "telegram")
 
 usage() {
     echo -e "${BLUE}Usage: ./manage.sh [command] [service]${NC}"
@@ -166,6 +166,54 @@ svc_dashboard() {
     esac
 }
 
+svc_korespondensi() {
+    local task=$1
+    case $task in
+        start)
+            echo -e "${CYAN}📄 Starting Korespondensi Server...${NC}"
+            sudo systemctl start korespondensi-server || true
+            ;;
+        stop)
+            echo -e "${CYAN}🛑 Stopping Korespondensi Server...${NC}"
+            sudo systemctl stop korespondensi-server || true
+            ;;
+        status)
+            if systemctl is-active --quiet korespondensi-server; then
+                echo -e "  [korespondensi] ${GREEN}ACTIVE${NC} (Port 8082)"
+            else
+                echo -e "  [korespondensi] ${RED}INACTIVE${NC}"
+            fi
+            ;;
+        logs)
+            sudo journalctl -u korespondensi-server -f -n 50
+            ;;
+    esac
+}
+
+svc_telegram() {
+    local task=$1
+    case $task in
+        start)
+            echo -e "${CYAN}🤖 Starting Telegram Bot...${NC}"
+            sudo systemctl start mcp-telegram-bot || true
+            ;;
+        stop)
+            echo -e "${CYAN}🛑 Stopping Telegram Bot...${NC}"
+            sudo systemctl stop mcp-telegram-bot || true
+            ;;
+        status)
+            if systemctl is-active --quiet mcp-telegram-bot; then
+                echo -e "  [telegram] ${GREEN}ACTIVE${NC} (Polling)"
+            else
+                echo -e "  [telegram] ${RED}INACTIVE${NC}"
+            fi
+            ;;
+        logs)
+            sudo journalctl -u mcp-telegram-bot -f -n 50
+            ;;
+    esac
+}
+
 # --- Dispatcher ---
 
 handle_all() {
@@ -176,25 +224,31 @@ handle_all() {
         svc_mcp status
         svc_vane status
         svc_waha status
+        svc_korespondensi status
+        svc_telegram status
         svc_serena status
         svc_dashboard status
     else
-        # Sequence: DB -> Engine -> MCP
+        # Sequence: DB -> Engine -> MCP -> Dependents
         svc_database "$task"
         svc_vane "$task"
         svc_waha "$task"
         svc_mcp "$task"
+        svc_korespondensi "$task"
+        svc_telegram "$task"
     fi
 }
 
 # Run command
 case $SVC in
-    all)      handle_all "$CMD" ;;
-    mcp)      svc_mcp "$CMD" ;;
-    database) svc_database "$CMD" ;;
-    vane)     svc_vane "$CMD" ;;
-    waha)     svc_waha "$CMD" ;;
-    serena)   svc_serena "$CMD" ;;
-    dashboard) svc_dashboard "$CMD" ;;
-    *)        echo "Unknown service: $SVC"; usage ;;
+    all)          handle_all "$CMD" ;;
+    mcp)          svc_mcp "$CMD" ;;
+    database)     svc_database "$CMD" ;;
+    vane)         svc_vane "$CMD" ;;
+    waha)         svc_waha "$CMD" ;;
+    serena)       svc_serena "$CMD" ;;
+    dashboard)    svc_dashboard "$CMD" ;;
+    korespondensi) svc_korespondensi "$CMD" ;;
+    telegram)     svc_telegram "$CMD" ;;
+    *)            echo "Unknown service: $SVC"; usage ;;
 esac
