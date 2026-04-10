@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "mcp-unified": {
-      "command": "python3",
+      "command": "/home/aseps/MCP/mcp-unified/venv/bin/python3",
       "args": [
         "/home/aseps/MCP/mcp-unified/mcp_server.py"
       ],
@@ -14,7 +14,7 @@
       ]
     },
     "mcp-unified-sse": {
-      "command": "python3",
+      "command": "/home/aseps/MCP/mcp-unified/venv/bin/python3",
       "args": [
         "/home/aseps/MCP/mcp-unified/mcp_server_sse.py"
       ],
