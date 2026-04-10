@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 
 POSTGRES_USER="${POSTGRES_USER:-aseps}"
 POSTGRES_DB="${POSTGRES_DB:-mcp}"
-POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-}"
+POSTGRES_PASSWORD=os.getenv("POSTGRES_PASSWORD", "${POSTGRES_PASSWORD:-}" if not os.getenv("CI") else "DUMMY")
 
 require_postgres_password() {
     if [ -z "$POSTGRES_PASSWORD" ]; then
@@ -58,7 +58,7 @@ setup_docker() {
     if ! docker run -d \
         --name mcp-postgres \
         -e POSTGRES_USER="$POSTGRES_USER" \
-        -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+        -e POSTGRES_PASSWORD=os.getenv("POSTGRES_PASSWORD", "$POSTGRES_PASSWORD" if not os.getenv("CI") else "DUMMY") \
         -e POSTGRES_DB="$POSTGRES_DB" \
         -p 5432:5432 \
         -v postgres_data:/var/lib/postgresql/data \
