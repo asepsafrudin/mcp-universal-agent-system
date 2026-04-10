@@ -1,7 +1,7 @@
 # TASK-040: OpenHands Service Registry
 
 **Dibuat:** 2026-04-09  
-**Status:** ACTIVE  
+**Status:** ✅ COMPLETED  
 **Priority:** HIGH  
 **Assignee:** TBD
 
@@ -13,16 +13,16 @@ Buat registry layanan internal untuk `mcp-unified` agar OpenHands dan agent lain
 
 ## Acceptance Criteria
 
-- [ ] Registry service internal tersedia dalam format yang mudah dibaca.
-- [ ] Minimal service `waha`, `korespondensi`, `postgres_knowledge`, dan `admin_ui` terdaftar.
-- [ ] Setiap service memiliki metadata base URL, health endpoint, dan auth mode.
-- [ ] Registry dapat dipakai ulang oleh task lain.
+- [x] Registry service internal tersedia dalam format yang mudah dibaca.
+- [x] Minimal service `waha`, `korespondensi`, `postgres_knowledge`, dan `admin_ui` terdaftar.
+- [x] Setiap service memiliki metadata base URL, health endpoint, dan auth mode.
+- [x] Registry dapat dipakai ulang oleh task lain.
 
 ## Subtasks
 
-- [ ] 040-A: Definisikan struktur registry service.
-- [ ] 040-B: Isi metadata service utama.
-- [ ] 040-C: Dokumentasikan cara baca registry.
+- [x] 040-A: Definisikan struktur registry service.
+- [x] 040-B: Isi metadata service utama.
+- [x] 040-C: Dokumentasikan cara baca registry.
 
 ## Dependensi
 

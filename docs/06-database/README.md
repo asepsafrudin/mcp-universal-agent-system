@@ -8,6 +8,9 @@ Dokumentasi schema, migrasi, dan operasional database untuk MCP Unified Server.
 |------|-----------|
 | [`DATABASE_INVESTIGATION.md`](./DATABASE_INVESTIGATION.md) | Investigasi dan analisis database |
 | [`memory_namespace_migration.md`](./memory_namespace_migration.md) | Migrasi schema memory namespace |
+| [`agent-db-access-notes.md`](./agent-db-access-notes.md) | Catatan akses database untuk agent IDE/OpenHands |
+| [`agent-db-debug-checklist.md`](./agent-db-debug-checklist.md) | Checklist debug cepat saat koneksi DB bermasalah |
+| [`agent-startup-matrix.md`](./agent-startup-matrix.md) | Ringkasan agent/runtime, env, dan DB target |
 
 ## 🗄️ Database Stack
 
@@ -74,6 +77,15 @@ CREATE INDEX memories_namespace_key_idx ON memories (namespace, key);
 ```
 
 📄 Detail: [`memory_namespace_migration.md`](./memory_namespace_migration.md)
+
+## 🤖 Agent Runtime Access
+
+Jika agent IDE atau OpenHands perlu mengakses knowledge base / PostgreSQL:
+
+- Pastikan env runtime menyertakan `PG_HOST`, `PG_PORT`, `PG_DATABASE`, `PG_USER`, `PG_PASSWORD`, dan `DATABASE_URL`
+- Jangan asumsi sandbox punya akses ke `localhost` host machine
+- Gunakan resource observability `mcp://openhands/task/env-context` untuk melihat snapshot env task aktif
+- Lihat juga catatan operasional di [`agent-db-access-notes.md`](./agent-db-access-notes.md)
 
 ## 📊 Investigation Results
 

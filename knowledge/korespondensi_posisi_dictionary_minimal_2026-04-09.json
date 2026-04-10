@@ -1,0 +1,42 @@
+{
+  "title": "Korespondensi POSISI Dictionary Minimal",
+  "date": "2026-04-09",
+  "source": {
+    "script": "korespondensi-server/src/services/posisi_bridge.py",
+    "endpoint": "GET /api/knowledge/posisi/terms"
+  },
+  "entries": [
+    { "token": "SES", "meaning": "Sekretariat / Sekretaris", "category": "unit" },
+    { "token": "SET", "meaning": "Sekretariat / Sekretaris", "category": "unit" },
+    { "token": "PRC", "meaning": "Perencanaan", "category": "unit" },
+    { "token": "BU", "meaning": "Bagian Umum", "category": "unit" },
+    { "token": "UM", "meaning": "Umum", "category": "unit" },
+    { "token": "TU", "meaning": "Tata Usaha", "category": "unit" },
+    { "token": "KEU", "meaning": "Keuangan", "category": "unit" },
+    { "token": "PUU", "meaning": "Perundang-Undangan / Substansi PUU", "category": "unit" },
+    { "token": "PEIPD", "meaning": "PEIPD", "category": "unit" },
+    { "token": "SUPD", "meaning": "SUPD", "category": "unit" },
+    { "token": "SD", "meaning": "Subdit Wilayah", "category": "unit" },
+    { "token": "BANGDA", "meaning": "Bina Pembangunan Daerah", "category": "unit" },
+    { "token": "DIRJEN", "meaning": "Direktorat Jenderal", "category": "unit" },
+    { "token": "DITJEN", "meaning": "Direktorat Jenderal", "category": "unit" },
+
+    { "token": "KOREKSI", "meaning": "Koreksi / revisi", "category": "action" },
+    { "token": "TTD", "meaning": "Tanda tangan / finalisasi", "category": "action" },
+    { "token": "SELESAI", "meaning": "Selesai", "category": "status" },
+    { "token": "DJ", "meaning": "Tanda disposisi / lanjutan proses", "category": "action" },
+    { "token": "DISPOSISI", "meaning": "Disposisi", "category": "action" },
+    { "token": "UPDATE", "meaning": "Pembaruan status", "category": "action" },
+    { "token": "POSITION_CHECK", "meaning": "Posisi diterima", "category": "status" },
+    { "token": "DITERIMA", "meaning": "Diterima", "category": "status" },
+    { "token": "PROSES", "meaning": "Dalam proses", "category": "status" },
+    { "token": "DONE", "meaning": "Selesai", "category": "status" },
+
+    { "token": "ND", "meaning": "Nomor dinas", "category": "note" },
+    { "token": "SISTEM", "meaning": "Sistem", "category": "note" },
+    { "token": "SIMND", "meaning": "SimND", "category": "note" },
+    { "token": "SRIKANDI", "meaning": "Srikandi", "category": "note" },
+    { "token": "POOLING", "meaning": "Pooling", "category": "note" },
+    { "token": "PAK BARJO", "meaning": "Nama orang / catatan internal", "category": "note" }
+  ]
+}

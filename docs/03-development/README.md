@@ -9,6 +9,7 @@ Panduan development, task management, dan code standards untuk MCP Unified Serve
 | [`task-system-refactoring.md`](./task-system-refactoring.md) | Proposal refaktorisasi sistem task |
 | [`backlog.md`](./backlog.md) | Technical debt dan backlog items |
 | [`ROOT_CLEANUP_ANALYSIS.md`](./ROOT_CLEANUP_ANALYSIS.md) | Analisis root folder cleanup |
+| [`CONFIG_PRECEDENCE_MAP.md`](./CONFIG_PRECEDENCE_MAP.md) | Prioritas config lintas-agent (.vscode/.cursor/.gemini/.venv/serena) |
 
 ## 🗂️ Task System
 

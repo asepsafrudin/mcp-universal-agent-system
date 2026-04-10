@@ -1,7 +1,7 @@
 # TASK-042: OpenHands Observability Resources
 
 **Dibuat:** 2026-04-09  
-**Status:** ACTIVE  
+**Status:** ✅ COMPLETED  
 **Priority:** MEDIUM  
 **Assignee:** TBD
 
@@ -13,17 +13,17 @@ Tambahkan resource observability MCP untuk membantu debugging OpenHands dan serv
 
 ## Acceptance Criteria
 
-- [ ] Ada resource untuk env context task aktif.
-- [ ] Ada resource untuk status service aktif.
-- [ ] Ada resource untuk ringkasan error terakhir.
-- [ ] Ada resource untuk riwayat task atau workflow sebelumnya.
-- [ ] Resource dapat dikonsumsi agent IDE lain.
+- [x] Ada resource untuk env context task aktif.
+- [x] Ada resource untuk status service aktif.
+- [x] Ada resource untuk ringkasan error terakhir.
+- [x] Ada resource untuk riwayat task atau workflow sebelumnya.
+- [x] Resource dapat dikonsumsi agent IDE lain.
 
 ## Subtasks
 
-- [ ] 042-A: Rancang format resource observability.
-- [ ] 042-B: Implementasi pembaca resource aktif.
-- [ ] 042-C: Dokumentasikan penggunaan resource.
+- [x] 042-A: Rancang format resource observability.
+- [x] 042-B: Implementasi pembaca resource aktif.
+- [x] 042-C: Dokumentasikan penggunaan resource.
 
 ## Dependensi
 
@@ -49,3 +49,4 @@ Prioritas eksekusi: #4.
 | Tanggal | Status | Oleh | Catatan |
 |---------|--------|------|---------|
 | 2026-04-09 | BACKLOG | agent | Task dibuat |
+| 2026-04-10 | COMPLETED | Antigravity | Audit selesai, implementasi diverifikasi & checkbox dirapikan |

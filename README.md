@@ -17,6 +17,19 @@ Proyek ini adalah implementasi **MCP (Model Context Protocol)** yang menyediakan
 - **🆕 Universal Gateway (Port 8000)** — Satu titik akses untuk semua layanan internal (mcp, vane, korespondensi, waha)
 - **Integration dengan Antigravity IDE** dan IDE lainnya
 
+## 🔧 Agent Database Access
+
+Jika agent IDE atau sub-agent butuh akses ke knowledge base / PostgreSQL, lihat:
+
+- [docs/06-database/agent-startup-matrix.md](docs/06-database/agent-startup-matrix.md)
+- [docs/06-database/agent-db-access-notes.md](docs/06-database/agent-db-access-notes.md)
+- [docs/06-database/agent-db-debug-checklist.md](docs/06-database/agent-db-debug-checklist.md)
+
+Catatan singkat:
+- jangan asumsi `localhost` sandbox sama dengan host machine
+- cek `DATABASE_URL` dan `PG_*` di runtime sebelum debug lebih jauh
+- untuk OpenHands task, lihat resource `mcp://openhands/task/env-context`
+
 ## 📁 Struktur Direktori
 
 /home/aseps/MCP/

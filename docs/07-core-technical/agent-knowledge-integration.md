@@ -536,6 +536,11 @@ Error: connection refused
 ```
 **Solution:** Check PostgreSQL running and credentials correct
 
+**Agent Runtime Note:** Jika error muncul di sandbox/task agent, cek dulu:
+- `DATABASE_URL`
+- `PG_HOST`, `PG_PORT`, `PG_DATABASE`, `PG_USER`, `PG_PASSWORD`
+- apakah sandbox benar-benar bisa menjangkau host DB yang dipakai editor
+
 ### Issue: pgvector extension not found
 ```
 Error: type "vector" does not exist
@@ -547,6 +552,18 @@ Error: type "vector" does not exist
 Error: embedding_generation_failed
 ```
 **Solution:** Verify Ollama running and model available
+
+## 🧭 Runtime Access Notes
+
+Saat agent dijalankan di sandbox atau orchestrator terpisah:
+
+- selalu verifikasi env runtime sebelum asumsi koneksi DB
+- jangan berasumsi `localhost` sandbox sama dengan host machine
+- untuk task OpenHands, lihat resource observability:
+  - `mcp://openhands/task/env-context`
+  - `mcp://openhands/task/{task_id}/status`
+  - `mcp://openhands/task/{task_id}/logs`
+- snapshot env task juga tersimpan di `ENV_CONTEXT.md` pada workspace task
 
 ## 📖 Further Reading
 

@@ -25,6 +25,7 @@ import sys
 import json
 import hashlib
 import logging
+import subprocess
 from datetime import datetime, date
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -531,6 +532,17 @@ def run_etl() -> None:
                     direktorat = EXCLUDED.direktorat,
                     updated_at = NOW()
             """)
+            # Keep agenda_puu mirrored in surat_masuk_puu_internal because the
+            # native DOCX mailmerge reads from this table directly.
+            cur.execute("""
+                UPDATE surat_masuk_puu_internal sp
+                SET agenda_puu = ld.agenda_puu,
+                    updated_at = NOW()
+                FROM lembar_disposisi ld
+                WHERE ld.unique_id = sp.unique_id
+                  AND ld.agenda_puu IS NOT NULL
+                  AND (sp.agenda_puu IS NULL OR sp.agenda_puu = '')
+            """)
         log.info("lembar_disposisi auto-populated: %d rows", total_stats["surat_puu"])
 
         conn.commit()
@@ -559,6 +571,21 @@ def run_etl() -> None:
             conn.commit()
         except Exception:
             pass
+
+    # Optional workflow audit: capture POSISI mapping health after ETL.
+    try:
+        audit_script = os.path.join("/home/aseps/MCP/korespondensi-server", "scripts", "report_puu_posisi_mapping.py")
+        audit_json = os.path.join("/home/aseps/MCP/korespondensi-server", "storage", "admin_data", "korespondensi", "puu_posisi_mapping_audit.json")
+        os.makedirs(os.path.dirname(audit_json), exist_ok=True)
+        subprocess.run(
+            [sys.executable, audit_script, "--limit", "50", "--json-out", audit_json],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        log.info("POSISI audit workflow completed: %s", audit_json)
+    except Exception as e:
+        log.warning("POSISI audit workflow skipped: %s", e)
 
     result = {
         "ok": True,

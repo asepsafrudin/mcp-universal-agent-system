@@ -1,0 +1,72 @@
+{
+  "title": "Korespondensi POSISI Terms Dictionary",
+  "date": "2026-04-09",
+  "provenance": {
+    "script_source": "korespondensi-server/src/services/posisi_bridge.py",
+    "validation_endpoint": "GET /api/knowledge/posisi/terms",
+    "context_endpoint": "GET /api/knowledge/posisi/unique"
+  },
+  "categories": {
+    "unit": [
+      "SES",
+      "SET",
+      "PRC",
+      "BU",
+      "UM",
+      "TU",
+      "KEU",
+      "PUU",
+      "PEIPD",
+      "SUPD",
+      "SD",
+      "BANGDA",
+      "DIRJEN",
+      "DITJEN"
+    ],
+    "action": [
+      "KOREKSI",
+      "TTD",
+      "SELESAI",
+      "DJ",
+      "DISPOSISI",
+      "UPDATE",
+      "POSITION_CHECK",
+      "DITERIMA",
+      "PROSES",
+      "DONE"
+    ],
+    "date_tokens": [
+      "13/3",
+      "16/3",
+      "24/2",
+      "9/1",
+      "11/3",
+      "17/3"
+    ],
+    "notes": [
+      "ND",
+      "PAK BARJO",
+      "SISTEM",
+      "SIMND",
+      "SRIKANDI",
+      "POOLING"
+    ]
+  },
+  "initial_meanings": {
+    "SES": "Sekretariat / Sekretaris",
+    "PRC": "Perencanaan",
+    "BU": "Bagian Umum",
+    "PUU": "Substansi Perundang-Undangan",
+    "KEU": "Keuangan",
+    "SUPD": "Sekretariat/Unit SUPD",
+    "KOREKSI": "Koreksi / revisi data",
+    "TTD": "Tanda tangan / finalisasi",
+    "SELESAI": "Selesai / ditutup",
+    "DJ": "Penanda disposisi / lanjutan"
+  },
+  "notes": [
+    "Ini kamus awal; definisi final perlu divalidasi manual terhadap sheet sumber.",
+    "Token diambil secara heuristik dari data POSISI nyata.",
+    "Jika ada token baru, append ke kategori yang sesuai lalu sinkronkan knowledge."
+  ]
+}

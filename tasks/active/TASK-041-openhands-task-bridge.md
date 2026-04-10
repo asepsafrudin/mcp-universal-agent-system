@@ -1,7 +1,7 @@
 # TASK-041: OpenHands Task Bridge
 
 **Dibuat:** 2026-04-09  
-**Status:** ACTIVE  
+**Status:** ✅ COMPLETED  
 **Priority:** HIGH  
 **Assignee:** TBD
 
@@ -13,16 +13,16 @@ Bangun bridge yang membuat OpenHands dapat membaca `ENV_CONTEXT.md`, service reg
 
 ## Acceptance Criteria
 
-- [ ] Bridge membaca env context task aktif.
-- [ ] Bridge membaca service registry internal.
-- [ ] Bridge dapat memanggil endpoint internal yang aman.
-- [ ] Tidak ada ketergantungan wajib pada Docker socket.
+- [x] Bridge membaca env context task aktif.
+- [x] Bridge membaca service registry internal.
+- [x] Bridge dapat memanggil endpoint internal yang aman.
+- [x] Tidak ada ketergantungan wajib pada Docker socket.
 
 ## Subtasks
 
-- [ ] 041-A: Tentukan interface bridge.
-- [ ] 041-B: Implementasi pembaca context + registry.
-- [ ] 041-C: Dokumentasikan pola pemakaian bridge.
+- [x] 041-A: Tentukan interface bridge.
+- [x] 041-B: Implementasi pembaca context + registry.
+- [x] 041-C: Dokumentasikan pola pemakaian bridge.
 
 ## Dependensi
 
