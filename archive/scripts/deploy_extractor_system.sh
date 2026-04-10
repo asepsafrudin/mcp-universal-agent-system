@@ -61,7 +61,7 @@ User=$USER
 WorkingDirectory=/home/aseps/MCP
 Environment=PYTHONPATH=/home/aseps/MCP/mcp-unified/integrations/agentic_ai
 Environment=PATH=/usr/bin:/usr/local/bin
-ExecStart=/usr/bin/python3 /home/aseps/MCP/run_production_extraction.py --all --save
+ExecStart=/usr/bin/python3 /home/aseps/MCP/scripts/run_production_extraction.py --all --save
 Restart=on-failure
 RestartSec=3600
 StandardOutput=append:/home/aseps/logs/extractor/scheduler.log
@@ -84,12 +84,12 @@ echo -e "${BLUE}Step 5: Testing extraction (dry run)...${NC}"
 
 # Test without saving
 cd /home/aseps/MCP
-python3 run_production_extraction.py --source hukumonline || echo "⚠️  Test extraction failed, but continuing..."
+python3 scripts/run_production_extraction.py --source hukumonline || echo "⚠️  Test extraction failed, but continuing..."
 
 echo -e "${BLUE}Step 6: Creating cron job for regular extraction...${NC}"
 
 # Add cron job for daily extraction at 6 AM
-(crontab -l 2>/dev/null | grep -v "run_production_extraction.py"; echo "0 6 * * * cd /home/aseps/MCP && /usr/bin/python3 run_production_extraction.py --all --save >> ~/logs/extractor/cron.log 2>&1") | crontab -
+(crontab -l 2>/dev/null | grep -v "run_production_extraction.py"; echo "0 6 * * * cd /home/aseps/MCP && /usr/bin/python3 scripts/run_production_extraction.py --all --save >> ~/logs/extractor/cron.log 2>&1") | crontab -
 
 echo "✅ Cron job added (daily at 6 AM)"
 
@@ -110,7 +110,7 @@ echo "  sudo systemctl status extractor-scheduler # Check status"
 echo "  sudo systemctl stop extractor-scheduler   # Stop"
 echo ""
 echo "Manual extraction:"
-echo "  python3 run_production_extraction.py --source hukumonline --save"
-echo "  python3 run_production_extraction.py --all --save"
+echo "  python3 scripts/run_production_extraction.py --source hukumonline --save"
+echo "  python3 scripts/run_production_extraction.py --all --save"
 echo ""
 echo "============================================================"

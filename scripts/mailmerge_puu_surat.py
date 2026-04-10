@@ -205,11 +205,23 @@ def run(limit=0, dry_run=False):
     for data in data_list:
         try:
             new_doc_id = fill_template(docs_svc, data)
+            doc_url = f"https://docs.google.com/document/d/{new_doc_id}/edit"
+            
+            # Save into DB
+            dsn = os.getenv("DATABASE_URL")
+            with psycopg.connect(dsn) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "UPDATE surat_untuk_substansi_puu SET doc_url = %s, updated_at = NOW() WHERE id = %s",
+                        (doc_url, data["id"])
+                    )
+                conn.commit()
+
             results.append({
                 "agenda": data["agenda"],
                 "surat_dari": data["surat_dari"],
                 "doc_id": new_doc_id,
-                "doc_url": f"https://docs.google.com/document/d/{new_doc_id}/edit",
+                "doc_url": doc_url,
                 "status": "created"
             })
             log.info(f"OK: {data['agenda']} -> {new_doc_id}")

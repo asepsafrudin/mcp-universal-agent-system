@@ -242,11 +242,11 @@ def run_generate(dry_run: bool = False) -> None:
                             (lembar_disposisi_id, agenda_puu, file_name,
                              folder_id, template_id, local_file_path,
                              generated_at, generation_status, sync_status)
-                        VALUES (%s,%s,%s,%s,%s,%s,NOW(),'local_ready','pending')
+                        VALUES (%s,%s,%s,%s,%s,%s,NOW(),'success','pending')
                         ON CONFLICT (lembar_disposisi_id) DO UPDATE SET
                             local_file_path   = EXCLUDED.local_file_path,
                             generated_at      = NOW(),
-                            generation_status = 'local_ready',
+                            generation_status = 'success',
                             sync_status       = 'pending'
                     """, (ld_id, agenda_puu, file_name, FOLDER_ID, TEMPLATE_ID, local_path))
                 conn.commit()

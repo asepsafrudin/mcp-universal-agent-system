@@ -9,6 +9,7 @@ Sistem ini menyediakan koneksi antara AI Agent dengan database knowledge untuk:
 - **RAG (Retrieval-Augmented Generation)** - Retrieval context untuk LLM
 - **Multi-Source Knowledge** - File-based KB + Database KB
 - **Namespace Isolation** - Multi-project support
+- **Namespace Discovery** - Integrasi dengan NamespaceManager (`shared_*`)
 
 ## 🏗️ Architecture
 
@@ -98,6 +99,23 @@ result = await bridge.query(
     namespace="legal_uu_desa"
 )
 
+# Query lintas namespace (akses difilter via NamespaceManager)
+result_multi_ns = await bridge.query(
+    query="kewenangan desa",
+    sources=[KnowledgeSource.DATABASE],
+    namespaces=["shared_legal", "legal_regulations"],
+    top_k=5
+)
+
+# Gabungan DB + DMS dengan filter DMS (lihat dms_connector untuk kunci filter)
+result_with_dms = await bridge.query(
+    query="peraturan desa",
+    sources=[KnowledgeSource.DATABASE, KnowledgeSource.DMS],
+    namespace="legal_regulations",
+    dms_filters={"jenis_dokumen": "Undang-Undang", "tahun": "2023"},
+    top_k=5
+)
+
 # Get context for LLM
 llm_context = await bridge.get_context_for_llm(
     query="bagaimana desa menyelenggarakan pemerintahan?",
@@ -135,21 +153,27 @@ Connector untuk PostgreSQL/pgvector database.
 Unified interface untuk multiple knowledge sources.
 
 **Features:**
-- Query multiple sources (file + database)
+- Query multiple sources (file + database + DMS)
 - Automatic result aggregation
 - Citation tracking
 - Unified context assembly
+- Namespace-aware query (single namespace + cross-namespace)
+- Namespace discovery via NamespaceManager
+- Optional `dms_filters` pada `query()` / `get_context_for_llm()` untuk mempersempit hasil DMS
 
 **Methods:**
 
 | Method | Description |
 |--------|-------------|
-| `query()` | Query multiple sources |
+| `query()` | Query multiple sources (opsional `dms_filters`) |
 | `query_database()` | Query database only |
 | `query_file_kb()` | Query file-based KB only |
+| `query_dms()` | Query DMS only |
 | `add_to_database()` | Add document to DB |
 | `add_regulation()` | Add regulation to DB |
-| `get_context_for_llm()` | Get optimized LLM context |
+| `get_context_for_llm()` | Get optimized LLM context (opsional `dms_filters`) |
+| `list_namespaces()` | List accessible namespaces |
+| `get_namespace_info()` | Get metadata for one namespace |
 | `verify_spm_classification()` | Verify SPM (file KB) |
 
 ### 3. KnowledgeSource Enum
@@ -158,9 +182,45 @@ Unified interface untuk multiple knowledge sources.
 class KnowledgeSource(Enum):
     FILE_BASED = "file"     # File-based JSON knowledge
     DATABASE = "database"   # PostgreSQL/pgvector
+    DMS = "dms"             # Document Management System
     EXTERNAL = "external"   # External APIs
     ALL = "all"            # Query all sources
 ```
+
+### 4. Namespace Model & Sharing
+
+AgentKnowledgeBridge terintegrasi dengan `NamespaceManager` untuk:
+- validasi namespace query
+- akses daftar namespace yang tersedia
+- metadata namespace (description, tags, access, document_count)
+
+Default shared namespace yang tersedia:
+- `shared_legal`
+- `shared_admin`
+- `shared_tech`
+- `shared_general`
+
+Contoh:
+
+```python
+# List namespace yang dapat diakses agent
+namespaces = await bridge.list_namespaces(agent_id="legal_agent")
+
+# Ambil info detail namespace
+info = await bridge.get_namespace_info("shared_legal", agent_id="legal_agent")
+
+# Query lintas namespace untuk retrieval gabungan
+context = await bridge.get_context_for_llm(
+    query="prosedur administrasi desa",
+    namespaces=["shared_legal", "shared_admin"],
+    top_k=5,
+    agent_id="legal_agent"
+)
+```
+
+### 5. Filter DMS (`dms_filters`)
+
+Parameter opsional `dms_filters: dict[str, str]` diteruskan ke `DMSKnowledgeConnector.search()` saat sumber DMS ikut di-query (`KnowledgeSource.DMS` atau `KnowledgeSource.ALL`). Kunci yang didukung antara lain: `jenis_dokumen`, `instansi`, `tahun`, `category`, `source` (sesuai implementasi `_apply_filters` di `dms_connector.py`).
 
 ## ⚙️ Configuration
 
@@ -271,9 +331,112 @@ async def comprehensive_search(query: str):
     
     print(f"Database results: {len(result.db_results)}")
     print(f"File KB results: {len(result.file_results)}")
+    print(f"DMS results: {len(result.dms_results)}")
     print(f"Citations: {result.citations}")
     
     return result
+```
+
+## 🗺️ Topologi Database RAG
+
+Berikut adalah gambaran topologi dan alur data untuk sistem RAG yang menggunakan PostgreSQL + pgvector.
+
+### Alur Data Ingestion (Penyimpanan)
+
+```
+Dokumen/Teks
+      │
+      ▼
+┌───────────────────────┐
+│ AgentKnowledgeBridge  │
+│ (add_document)        │
+└──────────┬────────────┘
+           │ 1. Konten dikirim
+           ▼
+┌───────────────────────┐
+│     RAG Engine        │
+└──────────┬────────────┘
+           │ 2. Minta embedding
+           ▼
+┌───────────────────────┐
+│  Ollama Service       │
+│ (nomic-embed-text)    │
+└──────────┬────────────┘
+           │ 3. Vector (768 dim) dikembalikan
+           ▼
+┌───────────────────────┐
+│     RAG Engine        │
+└──────────┬────────────┘
+           │ 4. Simpan ke Database
+           ▼
+┌───────────────────────────────────────────────┐
+│ PostgreSQL (DB: mcp_knowledge)                │
+│                                               │
+│  INSERT INTO knowledge_documents (             │
+│    id, content, embedding, metadata, namespace│
+│  ) VALUES (...)                               │
+│                                               │
+└───────────────────────────────────────────────┘
+```
+
+### Alur Data Retrieval (Pencarian)
+
+```
+Query Pengguna
+      │
+      ▼
+┌───────────────────────┐
+│ AgentKnowledgeBridge  │
+│ (query)               │
+└──────────┬────────────┘
+           │ 1. Query dikirim
+           ▼
+┌───────────────────────┐
+│     RAG Engine        │
+└──────────┬────────────┘
+           │ 2. Minta embedding untuk query
+           ▼
+┌───────────────────────┐
+│  Ollama Service       │
+│ (nomic-embed-text)    │
+└──────────┬────────────┘
+           │ 3. Vector query dikembalikan
+           ▼
+┌───────────────────────┐
+│     RAG Engine        │
+└──────────┬────────────┘
+           │ 4. Cari di Database menggunakan vector
+           ▼
+┌───────────────────────────────────────────────┐
+│ PostgreSQL (DB: mcp_knowledge)                │
+│                                               │
+│  SELECT content, metadata FROM                │
+│  knowledge_documents                          │
+│  WHERE namespace = ?                          │
+│  ORDER BY embedding <=> query_vector LIMIT ?  │
+│                                               │
+└───────────────────────────────────────────────┘
+           │ 5. Konteks & sumber dokumen dikembalikan
+           ▼
+      Hasil
+```
+
+### Struktur Tabel Inti
+
+- **Tabel**: `knowledge_documents`
+- **Indeks Vektor**: HNSW (Hierarchical Navigable Small World) untuk pencarian kemiripan kosinus (`vector_cosine_ops`) yang cepat.
+
+```
++-------------+-------------------------+------------------------------------------+
+| Nama Kolom  | Tipe Data               | Deskripsi                                |
++-------------+-------------------------+------------------------------------------+
+| id          | TEXT                    | ID unik untuk dokumen (Primary Key)      |
+| content     | TEXT                    | Isi teks dari dokumen yang disimpan      |
+| embedding   | VECTOR(768)             | Vector embedding dari 'content'          |
+| metadata    | JSONB                   | Data tambahan (mis. sumber, tipe, tahun) |
+| namespace   | TEXT                    | Isolasi data antar proyek atau domain    |
+| created_at  | TIMESTAMP               | Waktu pembuatan record                   |
++-------------+-------------------------+------------------------------------------+
 ```
 
 ## 🗄️ Database Schema

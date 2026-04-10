@@ -137,7 +137,7 @@ def run_sync(dry_run: bool = False, force: bool = False) -> None:
                 SELECT id, lembar_disposisi_id, agenda_puu, file_name,
                        local_file_path, folder_id
                 FROM disposisi_documents
-                WHERE generation_status = 'local_ready'
+                WHERE generation_status = 'success'
                   AND sync_status IN ('pending', 'error')
                   AND local_file_path IS NOT NULL
                 ORDER BY id
