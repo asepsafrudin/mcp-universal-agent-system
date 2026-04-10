@@ -37,10 +37,12 @@ def parse_indonesian_date(date_str: str) -> datetime:
                 break
         clean = re.sub(r'[^\d]', '/', val.strip())
         clean = re.sub(r'/+', '/', clean).strip('/')
-        for fmt in ("%d/%m/%Y", "%d/%m/%y", "%Y/%m/%d", "%m/%d/%Y"):
+        for fmt in ("%d/%m/%Y", "%d/%m/%y", "%Y/%m/%d", "%m/%d/%Y", "%d/%m"):
             try:
                 dt = datetime.strptime(clean, fmt)
-                if dt.year < 100:
+                if fmt == "%d/%m":
+                    dt = dt.replace(year=datetime.now().year)
+                elif dt.year < 100:
                     dt = dt.replace(year=dt.year + 2000)
                 return dt
             except ValueError:
@@ -107,14 +109,29 @@ class CorrespondenceDashboard:
             with get_db_conn() as conn:
                 with conn.cursor() as cur:
 
-                    # ── Statistik bulan berjalan ───────────────────────────
+                    # ── Statistik Anomali & Personnel ────────────────────────
+                    cur.execute("SELECT COUNT(*) FROM surat_masuk_puu_internal WHERE (no_agenda_dispo IS NULL OR TRIM(no_agenda_dispo) = '')")
+                    res_anomali = cur.fetchone()
+                    anomali_count = res_anomali[0] if res_anomali else 0
+
+                    cur.execute("""
+                        SELECT pic_name, COUNT(*) as count 
+                        FROM surat_masuk_puu_internal 
+                        WHERE pic_name IS NOT NULL AND pic_name != ''
+                        GROUP BY pic_name ORDER BY count DESC LIMIT 5
+                    """)
+                    personnel_rows = cur.fetchall()
+                    personnel_report = " | ".join([f"{r[0]}: *{r[1]}*" for r in personnel_rows]) if personnel_rows else "-"
+
+                    # ── Statistik bulan berjalan ─────────────────────────
                     cur.execute(
-                        "SELECT COUNT(*) FROM surat_masuk_puu "
+                        "SELECT COUNT(*) FROM surat_masuk_puu_internal "
                         "WHERE EXTRACT(MONTH FROM tanggal_diterima_puu)=%s "
                         "AND EXTRACT(YEAR FROM tanggal_diterima_puu)=%s",
                         (today.month, today.year)
                     )
-                    masuk_bulan = cur.fetchone()[0]
+                    res_masuk = cur.fetchone()
+                    masuk_bulan = res_masuk[0] if res_masuk else 0
 
                     cur.execute(
                         "SELECT COUNT(*) FROM surat_keluar_puu "
@@ -122,7 +139,8 @@ class CorrespondenceDashboard:
                         "AND EXTRACT(YEAR FROM tanggal_surat)=%s",
                         (today.month, today.year)
                     )
-                    keluar_bulan = cur.fetchone()[0]
+                    res_keluar = cur.fetchone()
+                    keluar_bulan = res_keluar[0] if res_keluar else 0
 
                     cur.execute(
                         "SELECT COUNT(*) FROM surat_untuk_substansi_puu "
@@ -130,13 +148,30 @@ class CorrespondenceDashboard:
                         "AND EXTRACT(YEAR FROM tanggal_diterima)=%s",
                         (today.month, today.year)
                     )
-                    substansi_bulan = cur.fetchone()[0]
+                    res_substansi = cur.fetchone()
+                    substansi_bulan = res_substansi[0] if res_substansi else 0
 
                     report += (
-                        f"📥 Masuk PUU: *{masuk_bulan}* | "
-                        f"📤 Keluar: *{keluar_bulan}* | "
-                        f"📋 Substansi: *{substansi_bulan}* _(bulan ini)_\n\n"
+                        f"📁 *Statistik Bulan Ini*\n"
+                        f"├ 📥 Masuk: *{masuk_bulan}*\n"
+                        f"├ 📤 Keluar: *{keluar_bulan}*\n"
+                        f"└ 📊 Total Surat: *{masuk_bulan + keluar_bulan}*\n\n"
                     )
+                    
+                    if anomali_count > 0:
+                        cur.execute("""
+                            SELECT nomor_nd, hal 
+                            FROM surat_masuk_puu_internal 
+                            WHERE (no_agenda_dispo IS NULL OR TRIM(no_agenda_dispo) = '')
+                            LIMIT 5
+                        """)
+                        anomali_rows = cur.fetchall()
+                        report += f"⚠️ *DATA ANOMALI ({anomali_count})*\n"
+                        for ar in anomali_rows:
+                            report += f"• `{ar[0] or '-'}` | _{str(ar[1])[:70]}..._\n"
+                        report += "\n"
+                    else:
+                        report += "✅ *Tidak ada anomali*\n\n"
 
                     # ══ SEKSI 1: Surat Masuk PUU (5 hari terakhir) ════════
                     cur.execute("""
@@ -150,92 +185,130 @@ class CorrespondenceDashboard:
                     """, (cutoff,))
                     rows_masuk = cur.fetchall()
 
-                    report += f"📨 *Surat Masuk PUU* ({len(rows_masuk)} surat)\n"
-                    report += "─────────────────────────\n"
+                    report += f"📨 *SURAT MASUK PUU* ({len(rows_masuk)})\n"
+                    report += "─────────────────────\n"
                     if not rows_masuk:
-                        report += "_Tidak ada surat masuk dalam 5 hari terakhir_\n\n"
+                        report += "_Tidak ada surat masuk_\n\n"
                     else:
                         for row in rows_masuk:
                             no, dari_full, dari, tgl_surat, tgl_terima, hal, posisi = row
                             pengirim = dari_full or dari or '-'
-                            report += f"• `{no or '-'}`\n"
-                            report += f"  👤 {pengirim}\n"
-                            report += f"  📅 Diterima: *{fmt_date(tgl_terima)}*"
-                            if tgl_terima and tgl_surat and tgl_terima != tgl_surat:
-                                report += f" _(surat: {fmt_date(tgl_surat)})_"
-                            report += "\n"
-                            report += f"  📄 {indent_hal(str(hal or '-')[:120])}\n"
+                            report += f"🔹 `{no or '-'}`\n"
+                            report += f"   👤 *{pengirim}*\n"
+                            report += f"   🗓️ {fmt_date(tgl_terima)} | 📄 {str(hal or '-')[:90]}...\n"
                             if posisi:
-                                report += f"  📍 `{posisi}`\n"
+                                report += f"   📍 `{posisi}`\n"
                             report += "\n"
 
-                    # ══ SEKSI 2: Surat Keluar PUU (5 hari terakhir) ═══════
+                    def summarize_posisi(pos_str: str) -> str:
+                        if not pos_str: return "-"
+                        parts = [p.strip() for p in pos_str.replace(";", " ").split() if p.strip()]
+                        if len(parts) <= 4: return pos_str
+                        # Ambil 2 step terakhir (biasanya Unit + Tanggal)
+                        return "... " + " ".join(parts[-4:])
+
+                    # ══ SEKSI 2: Surat Keluar PUU (Top 5 Terbaru berdasar Nomor) ═════════
+                    # Ambil 10 data terbaru berdasar angka di nomor surat (misal 053/PUU)
                     cur.execute("""
-                        SELECT nomor_nd, dari, tanggal_surat, hal, tujuan
-                        FROM surat_keluar_puu
-                        WHERE tanggal_surat >= %s
-                        ORDER BY tanggal_surat DESC
-                    """, (cutoff,))
-                    rows_keluar = cur.fetchall()
-
-                    report += f"📤 *Surat Keluar PUU* ({len(rows_keluar)} surat)\n"
-                    report += "─────────────────────────\n"
-                    if not rows_keluar:
-                        report += "_Tidak ada surat keluar dalam 5 hari terakhir_\n\n"
-                    else:
-                        for row in rows_keluar:
-                            no, dari, tgl, hal, tujuan = row
-                            report += f"• `{no or '-'}` | *{fmt_date(tgl)}*\n"
-                            if tujuan:
-                                report += f"  → {str(tujuan)[:70]}\n"
-                            report += f"  📄 {indent_hal(str(hal or '-')[:110])}\n\n"
-
-                    # ══ SEKSI 3: Surat untuk Substansi PUU (5 hari terakhir) ══
-                    cur.execute(
-                        "SELECT COUNT(*) FROM surat_untuk_substansi_puu WHERE tanggal_diterima >= %s",
-                        (cutoff,)
-                    )
-                    total_substansi_5hari = cur.fetchone()[0]
-
-                    cur.execute("""
-                        SELECT sp.nomor_surat, sp.surat_dari, sp.tanggal_disposisi,
-                               sp.tanggal_diterima, sp.isi_disposisi,
-                               sp.status, sl.perihal
-                        FROM surat_untuk_substansi_puu sp
-                        LEFT JOIN surat_dari_luar_bangda sl ON sl.id = sp.surat_id
-                        WHERE sp.tanggal_diterima >= %s
-                        ORDER BY sp.tanggal_diterima DESC, sp.tanggal_disposisi DESC
+                        SELECT s.nomor_nd, s.dari, s.tanggal_surat, s.hal, s.tujuan, rp.posisi
+                        FROM surat_keluar_puu s
+                        LEFT JOIN korespondensi_raw_pool rp ON rp.id = s.raw_pool_id
+                        ORDER BY 
+                            NULLIF(regexp_replace(s.nomor_nd, '^.*/([0-9]+)/.*$', '\\1'), s.nomor_nd)::integer DESC NULLS LAST,
+                            s.updated_at DESC
                         LIMIT 10
-                    """, (cutoff,))
-                    rows_substansi = cur.fetchall()
+                    """)
+                    rows_potential = cur.fetchall()
+                    
+                    from integrations.korespondensi.utils import parse_posisi
+                    
+                    rows_keluar = []
+                    rows_macet = [] # Posisi terakhir KOREKSI
+                    
+                    for row in rows_potential:
+                        no, dari, tgl_surat, hal, tujuan, posisi_raw = row
+                        parsed_pos = parse_posisi(posisi_raw or "")
+                        pos_date_str = parsed_pos.get("last_date")
+                        
+                        acuan_dt = None
+                        if pos_date_str:
+                            acuan_dt = parse_indonesian_date(pos_date_str)
+                        if not acuan_dt or acuan_dt == datetime.min:
+                            if tgl_surat:
+                                acuan_dt = datetime.combine(tgl_surat, datetime.min.time())
+                        
+                        # Data surat
+                        letter_data = {
+                            "no": no, "dari": dari, "hal": hal, 
+                            "tgl_display": acuan_dt.date() if acuan_dt else tgl_surat, 
+                            "posisi": posisi_raw,
+                            "days_stuck": (today - acuan_dt.date()).days if acuan_dt else 0
+                        }
+                        
+                        # Check if "KOREKSI" is the latest relevant action
+                        parsed_timeline = parsed_pos.get("timeline", [])
+                        relevant_events = [ev for ev in parsed_timeline if ev.get("action") not in ["UPDATE", "POSITION_CHECK"]]
+                        last_rel_action = str(relevant_events[-1].get("action", "")).upper() if relevant_events else ""
+                        
+                        is_macet = "KOREKSI" in last_rel_action and not parsed_pos.get("is_done")
+                        
+                        if is_macet:
+                            if len(rows_macet) < 5: rows_macet.append(letter_data)
+                        else:
+                            if len(rows_keluar) < 5: rows_keluar.append(letter_data)
 
-                    report += f"📋 *Surat untuk Substansi PUU* ({total_substansi_5hari} surat, tampil 10 terbaru)\n"
-                    report += "─────────────────────────\n"
-                    if not rows_substansi:
-                        report += "_Tidak ada surat substansi dalam 5 hari terakhir_\n"
+                    # Tampilkan Surat Macet duluan (urut dari yang paling lama macet)
+                    if rows_macet:
+                        # Sort by days_stuck DESC
+                        rows_macet.sort(key=lambda x: x['days_stuck'], reverse=True)
+                        
+                        report += f"🛑 *SURAT DALAM TAHAP KOREKSI* ({len(rows_macet)})\n"
+                        report += "─────────────────────\n"
+                        for item in rows_macet:
+                            days = item['days_stuck']
+                            if days <= 1:
+                                label = f"🟡 *Menunggu Koreksi* ({days} hari)"
+                                icon = "▫️"
+                            elif days <= 4:
+                                label = f"🟠 *Perlu Perhatian* ({days} hari)"
+                                icon = "🚩"
+                            else:
+                                label = f"🔴 *TERTAHAN LAMA* ({days} hari)"
+                                icon = "🚨"
+
+                            report += f"{icon} `{item['no'] or '-'}`\n"
+                            report += f"   {label} | 🗓️ {fmt_date(item['tgl_display'])}\n"
+                            report += f"   📄 _{str(item['hal'] or '-')[:85]}..._\n"
+                            report += f"   📍 {summarize_posisi(item['posisi'])}\n\n"
+                        report += "\n"
+
+                    report += f"📤 *SURAT KELUAR PUU* ({len(rows_keluar)})\n"
+                    report += "─────────────────────\n"
+                    if not rows_keluar and not rows_macet:
+                        report += "_Tidak ada aktivitas surat keluar_\n\n"
                     else:
-                        status_icon = {"pending": "⏳", "selesai": "✅", "proses": "🔄"}
-                        for row in rows_substansi:
-                            no, sdr, tgl_dispo, tgl_terima, isi_dispo, status, perihal = row
-                            icon = status_icon.get(str(status or '').lower(), "📝")
-                            report += f"• `{no or '-'}`\n"
-                            report += f"  👤 {sdr or '-'}\n"
-                            report += f"  📅 Diterima: *{fmt_date(tgl_terima)}*"
-                            if tgl_dispo and tgl_terima and tgl_dispo != tgl_terima:
-                                report += f" _(dispo: {fmt_date(tgl_dispo)})_"
+                        for item in rows_keluar:
+                            report += f"🔸 `{item['no'] or '-'}`\n"
+                            report += f"   🗓️ {fmt_date(item['tgl_display'])} | 📄 _{str(item['hal'] or '-')[:85]}..._\n"
+                            if item['posisi']:
+                                report += f"   📍 {summarize_posisi(item['posisi'])}\n"
                             report += "\n"
-                            if perihal:
-                                report += f"  📄 {indent_hal(str(perihal)[:110])}\n"
-                            if isi_dispo:
-                                clean_dispo = str(isi_dispo).replace('\n', ' ')[:90]
-                                report += f"  📌 _{clean_dispo}_\n"
-                            report += f"  {icon} Status: `{status or '-'}`\n"
-                            report += "\n"
-                        if total_substansi_5hari > 10:
-                            report += f"_...dan {total_substansi_5hari - 10} surat lainnya. Gunakan /cari untuk pencarian spesifik._\n"
+
 
         except Exception as e:
             report += f"⚠️ Error memuat data: `{str(e)}`\n"
+
+        # ── SEKSI SYNC STATUS ─────────────────────────
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT status, started_at FROM correspondence_sync_runs ORDER BY started_at DESC LIMIT 1")
+                    last_sync = cur.fetchone()
+                    if last_sync:
+                        status_ic = "🟢" if last_sync[0] == 'success' else "🔴"
+                        report += f"\n🔄 *Last Sync Status:* {status_ic} `{last_sync[0]}` ({fmt_date(last_sync[1].date())})\n"
+        except:
+            pass
 
         return report
 
@@ -381,6 +454,101 @@ class CorrespondenceDashboard:
             logger.error(f"_search_internal_by_day_month error: {e}")
         return results
 
+    def get_anomalies_report(self, limit: int = 10) -> str:
+        """List letters with missing metadata (anomalies)."""
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT unique_id, nomor_nd, dari, hal, tanggal_surat 
+                        FROM surat_masuk_puu_internal 
+                        WHERE (no_agenda_dispo IS NULL OR TRIM(no_agenda_dispo) = '')
+                        ORDER BY tanggal_surat DESC LIMIT %s
+                    """, (limit,))
+                    rows = cur.fetchall()
+            
+            if not rows:
+                return "✅ *Tidak ada anomali surat ditemukan.* Semua data memiliki agenda."
+                
+            report = "⚠️ *LAPORAN ANOMALI SURAT (Missing Agenda)*\n\n"
+            for r in rows:
+                tgl = r[4].strftime('%d/%m/%y') if r[4] else '?'
+                report += f"• `{r[1] or '-'}` | {tgl}\n  📄 {str(r[3])[:100]}...\n\n"
+            return report
+        except Exception as e:
+            return f"⚠️ Error: {str(e)}"
+
+    def send_reminder(self, letter_no: str, agent_pesan: str) -> Dict[str, Any]:
+        """Prepare reminder data for a letter."""
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT nomor_nd, hal, posisi, dari 
+                        FROM korespondensi_raw_pool 
+                        WHERE nomor_nd ILIKE %s LIMIT 1
+                    """, (f"%{letter_no}%",))
+                    row = cur.fetchone()
+            
+            if not row:
+                return {"success": False, "error": f"Surat '{letter_no}' tidak ditemukan."}
+            
+            return {
+                "success": True,
+                "data": {
+                    "nomor_nd": row[0],
+                    "hal": row[1],
+                    "posisi": row[2] or "Unknown",
+                    "dari": row[3],
+                    "pesan": agent_pesan
+                }
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def get_personnel_report(self) -> str:
+        """Get report of PIC workloads."""
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT pic_name, COUNT(*) as count 
+                        FROM surat_masuk_puu_internal 
+                        WHERE pic_name IS NOT NULL AND pic_name != ''
+                        GROUP BY pic_name ORDER BY count DESC
+                    """)
+                    rows = cur.fetchall()
+            
+            if not rows:
+                return "👤 *Data PIC belum tersedia atau belum ada penugasan.*"
+                
+            report = "👤 *BEBAN KERJA PIC (PUU)*\n"
+            report += "─────────────────────────\n"
+            for r in rows:
+                report += f"• *{r[0]}*: `{r[1]} surat`\n"
+            return report
+        except Exception as e:
+            return f"⚠️ Error: {str(e)}"
+
+    def trigger_sync(self) -> bool:
+        """Trigger ETL and internal sync scripts."""
+        import subprocess
+        etl_script = "/home/aseps/MCP/scripts/etl_korespondensi_db_centric.py"
+        python_bin = "/home/aseps/MCP/.venv/bin/python3"
+        
+        try:
+            # Run ETL in background
+            subprocess.Popen(
+                [python_bin, etl_script],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd="/home/aseps/MCP/korespondensi-server"
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Failed to trigger sync: {e}")
+            return False
+
 def format_search_results(results, query):
     if not results:
         return f"🔍 Tidak ditemukan hasil untuk: *{query}*"
@@ -403,8 +571,7 @@ def format_search_results(results, query):
             if info["forwarded_to_list"]:
                 output += f"↪️ Forwarded: {info['forwarded_from']} → {', '.join(info['forwarded_to_list'])}\n"
             output += f"📥 Arahan: _{dispo_raw}_\n"
-        output += "\n"
-    return output
+        return output
 
 if __name__ == "__main__":
     db = CorrespondenceDashboard()
