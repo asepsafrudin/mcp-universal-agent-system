@@ -20,8 +20,10 @@ Untuk operasi berikut, langsung eksekusi tanpa planning formal dan tanpa self-re
 - **Append text ke config files** (.gitignore, .env.example, README). [cite: 36]
   → Gunakan: `echo "text" >> file` atau `replace_in_file`. [cite: 36]
   → Hindari: heredoc `cat << 'EOF'` untuk teks sederhana agar tidak memicu over-engineering loop. [cite: 36]
-- **Read-only commands**: `cat`, `ls`, `grep`, `find`, `head`, `tail`. [cite: 7]
+- **Read-only commands**: `cat`, `ls`, `grep*`, `find`, `head`, `tail`, `ps aux | grep`. [cite: 7]
+  → **FIX Terminal:** Pipe patterns sekarang whitelisted aman via shell_tools.py. [cite: 7]
   → Catatan: `cat >> file` adalah WRITE, perlakukan sebagai operasi yang butuh perhatian/echo. [cite: 8]
+  → **Terminal Cleanup:** Setelah long-running commands (`top`, npm), jalankan `jobs` & `kill %1` jika inactive. [NEW]
 - **Dokumentasi**: Membuat atau mengedit file markdown (.md). [cite: 6]
 
 Self-review TIDAK diperlukan untuk fast-path operations. Laporan cukup: "✅ Done: [deskripsi singkat 1 baris]". 

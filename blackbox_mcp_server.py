@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-\"\"\" 
+"""
 BLACKBOXAI MCP Server - Dedicated MCP protocol server untuk BLACKBOXAI tools.
 Extend mcp-unified capabilities dengan BLACKBOX-specific planning & execution.
-\"\"\"
+(FIXED: Proper triple-quote docstring - no syntax error)
+"""
 
 import sys
 import os
