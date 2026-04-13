@@ -9,6 +9,7 @@ import sys
 import os
 import asyncio
 import logging
+import inspect
 from pathlib import Path
 
 # Add project root to path
@@ -29,15 +30,30 @@ mcp_server = Server('blackboxai-mcp')
 tools_registry = {}
 
 def register_blackbox_tool(name, description, input_schema):
-    '''Register BLACKBOXAI tool'''
-    tools_registry[name] = {
-        'name': name,
-        'description': description,
-        'inputSchema': input_schema
-    }
+    '''Register BLACKBOXAI tool (Decorator factory)'''
+    def decorator(func):
+        tools_registry[name] = {
+            'name': name,
+            'description': description,
+            'inputSchema': input_schema,
+            'handler': func
+        }
+        return func
+    return decorator
 
 # Define BLACKBOXAI MCP Tools
-@register_blackbox_tool
+@register_blackbox_tool(
+    name='blackbox_thinking_plan',
+    description='Buat detailed thinking plan untuk complex task menggunakan BLACKBOXAI methodology',
+    input_schema={
+        "type": "object",
+        "properties": {
+            "task_description": {"type": "string", "description": "Deskripsi tugas yang akan direncanakan"},
+            "context": {"type": "string", "description": "Konteks tambahan"}
+        },
+        "required": ["task_description"]
+    }
+)
 def blackbox_thinking_plan(task_description: str, context: str = ''):
     '''Buat detailed thinking plan untuk complex task menggunakan BLACKBOXAI methodology'''
     return {
@@ -46,12 +62,33 @@ def blackbox_thinking_plan(task_description: str, context: str = ''):
         'confidence': 0.95
     }
 
-@register_blackbox_tool
+@register_blackbox_tool(
+    name='blackbox_project_analysis',
+    description='Analyze project structure & suggest improvements',
+    input_schema={
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "Path direktori proyek"}
+        },
+        "required": ["path"]
+    }
+)
 def blackbox_project_analysis(path: str):
     '''Analyze project structure & suggest improvements'''
     return {'summary': f'Project at {path}: Ready for MCP integration', 'recommendations': ['Add TODO.md']}
 
-@register_blackbox_tool
+@register_blackbox_tool(
+    name='blackbox_fix_plan',
+    description='Generate fix plan untuk code error',
+    input_schema={
+        "type": "object",
+        "properties": {
+            "file_path": {"type": "string", "description": "Path ke file yang bermasalah"},
+            "error_msg": {"type": "string", "description": "Pesan error atau deskripsi bug"}
+        },
+        "required": ["file_path", "error_msg"]
+    }
+)
 def blackbox_fix_plan(file_path: str, error_msg: str):
     '''Generate fix plan untuk code error'''
     return {'fix_steps': [f'Fix {error_msg} in {file_path}']}
@@ -71,15 +108,17 @@ async def list_blackbox_tools():
 @mcp_server.call_tool()
 async def call_blackbox_tool(name: str, arguments: dict):
     try:
-        # Simulate tool execution (extend dengan actual BLACKBOXAI logic)
-        if name == 'blackbox_thinking_plan':
-            result = blackbox_thinking_plan(**arguments)
-        elif name == 'blackbox_project_analysis':
-            result = blackbox_project_analysis(**arguments)
-        elif name == 'blackbox_fix_plan':
-            result = blackbox_fix_plan(**arguments)
-        else:
+        if name not in tools_registry:
             raise ValueError(f'Unknown tool: {name}')
+        
+        tool_info = tools_registry[name]
+        handler = tool_info['handler']
+        
+        # Execute tool handler
+        if inspect.iscoroutinefunction(handler):
+            result = await handler(**arguments)
+        else:
+            result = handler(**arguments)
         
         return [TextContent(type='text', text=str(result))]
     except Exception as e:

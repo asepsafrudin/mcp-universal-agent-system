@@ -29,5 +29,5 @@ Status: IMPLEMENTATION IN PROGRESS ✅ PLAN APPROVED
 
 ### 6. [PENDING] Add to blackbox_mcp_settings.json & restart MCP
 
-**Completed Steps: 0/6**
-**Next Step: Edit shell_tools.py**
+**Completed Steps: 5/6**
+**Next Step: Add to blackbox_mcp_settings.json & restart MCP**
