@@ -33,12 +33,17 @@ print()
 flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
 
 # Coba buka browser lokal, atau tampilkan URL manual
+# Coba buka browser lokal
 try:
-    creds = flow.run_local_server(port=8080, open_browser=True)
-except Exception:
-    print("Browser tidak bisa dibuka otomatis.")
-    print("Gunakan mode console:")
-    creds = flow.run_console()
+    creds = flow.run_local_server(
+        port=0, 
+        open_browser=True, 
+        success_message='Autentikasi berhasil! Silakan kembali ke terminal.'
+    )
+except Exception as e:
+    print(f"Error: {e}")
+    print("\nSilakan ikuti instruksi di atas untuk menyelesaikan autentikasi.")
+    exit(1)
 
 # Simpan token baru
 token_data = {

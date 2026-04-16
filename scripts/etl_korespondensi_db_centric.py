@@ -279,6 +279,7 @@ def process_source(
     spreadsheet_id: str,
     sheet_name: str,
     skip_sheets: Optional[List[str]] = None,
+    data_group: str = "INTERNAL"
 ) -> Dict[str, int]:
     stats = {"total": 0, "inserted_raw": 0, "updated_raw": 0, "surat_puu": 0, "skipped": 0}
 
@@ -287,7 +288,7 @@ def process_source(
         log.info("SKIP sheet %s / %s (terdaftar di skip_sheets)", unit_name, sheet_name)
         return stats
 
-    log.info("Fetching %s / %s", unit_name, sheet_name)
+    log.info("Fetching %s / %s (%s)", unit_name, sheet_name, data_group)
     try:
         values = fetch_sheet_data(spreadsheet_id, sheet_name)
     except Exception as e:
@@ -324,14 +325,15 @@ def process_source(
             disposisi_val = get(row, idx_map, "DISPOSISI")
             no_agenda_val = get(row, idx_map, "NO_AGENDA")
 
-            # Upsert ke raw_pool
+            # Upsert ke raw_pool dengan identitas unit resmi
             cur.execute(
                 """
                 INSERT INTO korespondensi_raw_pool (
                     unique_id, no_agenda, tanggal, nomor_nd,
                     dari, hal, posisi, disposisi,
-                    source_spreadsheet_id, source_sheet_name, source_row_num
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    source_spreadsheet_id, source_sheet_name, source_row_num,
+                    sheet_identity, owner_unit, data_group
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 ON CONFLICT (unique_id) DO UPDATE SET
                     no_agenda    = EXCLUDED.no_agenda,
                     tanggal      = EXCLUDED.tanggal,
@@ -343,14 +345,18 @@ def process_source(
                     source_spreadsheet_id = EXCLUDED.source_spreadsheet_id,
                     source_sheet_name     = EXCLUDED.source_sheet_name,
                     source_row_num        = EXCLUDED.source_row_num,
-                    updated_at   = NOW()
+                    sheet_identity        = EXCLUDED.sheet_identity,
+                    owner_unit            = EXCLUDED.owner_unit,
+                    data_group            = EXCLUDED.data_group,
+                    updated_at            = NOW()
                 RETURNING id, (xmax = 0) AS is_insert
                 """,
                 (
                     unique_id, no_agenda_val,
                     tanggal.isoformat() if tanggal else None,
                     nomor_nd_raw, dari_val, hal_val, posisi_val, disposisi_val,
-                    spreadsheet_id, sheet_name, row_num
+                    spreadsheet_id, sheet_name, row_num,
+                    unit_name, unit_name, data_group
                 )
             )
             row_result = cur.fetchone()
@@ -491,8 +497,13 @@ def run_etl() -> None:
             skip_sheets_list = skip_sheets_val if isinstance(skip_sheets_val, list) else []
             if skip_sheets_list:
                 log.info("[%s] skip_sheets aktif: %s", unit_name, skip_sheets_list)
+            
+            # Tentukan grup data (Isolasi)
+            # Unit Master Bangda atau Surat Masuk Umum masuk ke EXTERNAL
+            group = "EXTERNAL" if "BANGDA" in unit_name.upper() or "SURAT MASUK" in sheet_name.upper() else "INTERNAL"
+            
             stats = process_source(conn, unit_name, spreadsheet_id, sheet_name,
-                                   skip_sheets=skip_sheets_list)
+                                   skip_sheets=skip_sheets_list, data_group=group)
             for k in total_stats:
                 total_stats[k] += stats.get(k, 0)
             log.info(

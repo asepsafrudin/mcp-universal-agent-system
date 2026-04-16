@@ -27,9 +27,11 @@ SRC_DIR="/home/aseps/MCP"
 # --- 1. Copy service files ke /etc/systemd/system/ ---
 echo -e "${YELLOW}📋 Menyalin unit file ke systemd...${NC}"
 cp "$SRC_DIR/korespondensi-server/korespondensi-server.service" /etc/systemd/system/
+cp "$SRC_DIR/korespondensi-server/living-archive.service" /etc/systemd/system/
 cp "$SRC_DIR/services/vane/vane-ai.service" /etc/systemd/system/
 cp "$SRC_DIR/mcp-unified/integrations/telegram/mcp-telegram-bot.service" /etc/systemd/system/
 echo -e "  ${GREEN}✓${NC} korespondensi-server.service"
+echo -e "  ${GREEN}✓${NC} living-archive.service"
 echo -e "  ${GREEN}✓${NC} vane-ai.service"
 echo -e "  ${GREEN}✓${NC} mcp-telegram-bot.service"
 
@@ -42,8 +44,8 @@ echo -e "  ${GREEN}✓${NC} daemon-reload selesai"
 # --- 3. Enable auto-start ---
 echo ""
 echo -e "${YELLOW}🔧 Mengaktifkan auto-start saat boot...${NC}"
-systemctl enable korespondensi-server vane-ai mcp-telegram-bot
-echo -e "  ${GREEN}✓${NC} Ketiga service enabled"
+systemctl enable korespondensi-server living-archive vane-ai mcp-telegram-bot
+echo -e "  ${GREEN}✓${NC} Keempat service enabled"
 
 # --- 4. Start services ---
 echo ""
@@ -59,6 +61,11 @@ systemctl start korespondensi-server && echo -e "${GREEN}OK${NC}" || echo -e "${
 
 sleep 2
 
+echo -n "  [living-archive] Memulai... "
+systemctl start living-archive && echo -e "${GREEN}OK${NC}" || echo -e "${RED}FAILED${NC}"
+
+sleep 2
+
 echo -n "  [mcp-telegram-bot] Memulai... "
 systemctl start mcp-telegram-bot && echo -e "${GREEN}OK${NC}" || echo -e "${RED}FAILED${NC}"
 
@@ -68,7 +75,7 @@ echo -e "${CYAN}============================================${NC}"
 echo -e "${CYAN} Status Akhir${NC}"
 echo -e "${CYAN}============================================${NC}"
 
-for svc in mcp-unified korespondensi-server vane-ai mcp-telegram-bot; do
+for svc in mcp-unified korespondensi-server living-archive vane-ai mcp-telegram-bot; do
     if systemctl is-active --quiet "$svc"; then
         echo -e "  [$svc] ${GREEN}ACTIVE ✓${NC}"
     else
