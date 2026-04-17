@@ -34,7 +34,7 @@ import psycopg
 PROJECT_ROOT = "/home/aseps/MCP/mcp-unified"
 sys.path.insert(0, PROJECT_ROOT)
 from core.secrets import load_runtime_secrets  # type: ignore
-from integrations.korespondensi.utils import extract_puu_received_date  # type: ignore
+from integrations.korespondensi.utils import extract_puu_received_date, determine_refined_status  # type: ignore
 
 load_runtime_secrets()
 
@@ -365,7 +365,11 @@ def process_source(
             # Check for position change to log in timeline
             cur.execute("SELECT posisi FROM surat_masuk_puu_internal WHERE unique_id = %s", (unique_id,))
             old_internal = cur.fetchone()
-            old_posisi = old_internal[0] if old_internal else None
+            old_posisi_internal = old_internal[0] if old_internal else None
+            
+            cur.execute("SELECT posisi FROM surat_keluar_puu WHERE unique_id = %s", (unique_id,))
+            old_vault = cur.fetchone()
+            old_posisi_vault = old_vault[0] if old_vault else None
             
             if is_insert:
                 stats["inserted_raw"] += 1
@@ -377,11 +381,12 @@ def process_source(
             
             # Handle surat keluar PUU (NOMOR ND ending with /PUU)
             if is_keluar:
+                refined_status_keluar = determine_refined_status(posisi_val)
                 cur.execute("""
                     INSERT INTO surat_keluar_puu (
                         unique_id, tanggal_surat, nomor_nd,
-                        dari, hal, filter_reason, raw_pool_id
-                    ) VALUES (%s,%s,%s,%s,%s,%s,%s)
+                        dari, hal, filter_reason, raw_pool_id, status_pengiriman, posisi
+                    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     ON CONFLICT (unique_id) DO UPDATE SET
                         tanggal_surat = EXCLUDED.tanggal_surat,
                         nomor_nd = EXCLUDED.nomor_nd,
@@ -389,9 +394,24 @@ def process_source(
                         hal = EXCLUDED.hal,
                         filter_reason = EXCLUDED.filter_reason,
                         raw_pool_id = EXCLUDED.raw_pool_id,
+                        status_pengiriman = EXCLUDED.status_pengiriman,
+                        posisi = EXCLUDED.posisi,
                         updated_at = NOW()
+                    RETURNING id
                 """, (unique_id, tanggal.isoformat() if tanggal else None,
-                      nomor_nd_raw, dari_val, hal_val, reason, raw_id))
+                      nomor_nd_raw, dari_val, hal_val, reason, raw_id, refined_status_keluar, posisi_val))
+                vault_id = cur.fetchone()[0]
+                
+                # Log to vault timeline if position changed
+                if old_posisi_vault != posisi_val:
+                    extracted_dt = parse_posisi_date(posisi_val)
+                    event_time = extracted_dt if extracted_dt else datetime.now()
+                    cur.execute("""
+                        INSERT INTO vault_events (letter_id, event_type, event_value, event_at)
+                        VALUES (%s, 'posisi_change', %s, %s)
+                    """, (vault_id, posisi_val, event_time))
+                    log.info("[VAULT:%s] Timeline update: %s -> %s", unique_id, old_posisi_vault, posisi_val)
+
                 stats["surat_keluar"] = stats.get("surat_keluar", 0) + 1
                 continue
             
@@ -417,14 +437,15 @@ def process_source(
                         pass
 
             # Upsert ke surat_masuk_puu_internal (termasuk dari_full dan tanggal_diterima_puu)
+            refined_status_masuk = determine_refined_status(posisi_val)
             cur.execute(
                 """
                 INSERT INTO surat_masuk_puu_internal (
                     unique_id, tanggal_surat, nomor_nd,
                     dari, dari_full, hal, no_agenda_dispo,
                     is_puu, filter_reason, raw_pool_id, tanggal_diterima_puu,
-                    posisi
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,TRUE,%s,%s,%s,%s)
+                    posisi, status_pengiriman
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,TRUE,%s,%s,%s,%s,%s)
                 ON CONFLICT (unique_id) DO UPDATE SET
                     tanggal_surat    = EXCLUDED.tanggal_surat,
                     nomor_nd         = EXCLUDED.nomor_nd,
@@ -436,6 +457,7 @@ def process_source(
                     raw_pool_id      = EXCLUDED.raw_pool_id,
                     tanggal_diterima_puu = COALESCE(EXCLUDED.tanggal_diterima_puu, surat_masuk_puu_internal.tanggal_diterima_puu),
                     posisi           = EXCLUDED.posisi,
+                    status_pengiriman = EXCLUDED.status_pengiriman,
                     updated_at       = NOW()
                 RETURNING id
                 """,
@@ -447,13 +469,14 @@ def process_source(
                     dari_full_val, hal_val,
                     no_agenda_dispo, reason, raw_id,
                     tanggal_diterima_puu.isoformat() if tanggal_diterima_puu else None,
-                    posisi_val
+                    posisi_val,
+                    refined_status_masuk
                 )
             )
             internal_id = cur.fetchone()[0]
             
             # Log to timeline if position changed
-            if old_posisi != posisi_val:
+            if old_posisi_internal != posisi_val:
                 extracted_dt = parse_posisi_date(posisi_val)
                 event_time = extracted_dt if extracted_dt else datetime.now()
                 
@@ -461,7 +484,7 @@ def process_source(
                     INSERT INTO correspondence_events (letter_id, event_type, event_value, event_at)
                     VALUES (%s, 'posisi_change', %s, %s)
                 """, (internal_id, posisi_val, event_time))
-                log.info("[%s] Timeline update: %s -> %s (extracted_at=%s)", unique_id, old_posisi, posisi_val, event_time)
+                log.info("[%s] Timeline update: %s -> %s (extracted_at=%s)", unique_id, old_posisi_internal, posisi_val, event_time)
             stats["surat_puu"] += 1
 
     return stats

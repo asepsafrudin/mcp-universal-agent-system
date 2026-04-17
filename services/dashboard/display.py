@@ -531,8 +531,28 @@ class CorrespondenceDashboard:
             return f"⚠️ Error: {str(e)}"
 
     def trigger_sync(self) -> bool:
-        """Trigger ETL and internal sync scripts."""
+        """Trigger ETL and internal sync scripts with anti-spam protection."""
         import subprocess
+        import time
+        
+        lock_file = "/tmp/mcp_correspondence_sync.lock"
+        # Check if lock exists and is recent (within 5 minutes)
+        if os.path.exists(lock_file):
+            try:
+                mtime = os.path.getmtime(lock_file)
+                if time.time() - mtime < 300: # 5 minutes cooldown
+                    logger.warning("⚠️ Sinkronisasi sudah berjalan atau baru saja dipicu. Silakan tunggu beberapa menit.")
+                    return False
+            except Exception:
+                pass
+        
+        # Create/Update lock
+        try:
+            with open(lock_file, 'w') as f:
+                f.write(str(time.time()))
+        except Exception as e:
+            logger.warning(f"Could not create sync lock: {e}")
+
         etl_script = "/home/aseps/MCP/scripts/etl_korespondensi_db_centric.py"
         python_bin = "/home/aseps/MCP/.venv/bin/python3"
         
@@ -547,6 +567,9 @@ class CorrespondenceDashboard:
             return True
         except Exception as e:
             logger.error(f"Failed to trigger sync: {e}")
+            if os.path.exists(lock_file):
+                try: os.unlink(lock_file)
+                except: pass
             return False
 
 def format_search_results(results, query):
@@ -571,7 +594,7 @@ def format_search_results(results, query):
             if info["forwarded_to_list"]:
                 output += f"↪️ Forwarded: {info['forwarded_from']} → {', '.join(info['forwarded_to_list'])}\n"
             output += f"📥 Arahan: _{dispo_raw}_\n"
-        return output
+    return output
 
 if __name__ == "__main__":
     db = CorrespondenceDashboard()
