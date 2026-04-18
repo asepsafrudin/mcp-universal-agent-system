@@ -1,0 +1,106 @@
+# Workspace Management
+logs/
+workspace/
+quality__pycache__/
+*.env
+.env
+.env.local
+.env.secret
+**/.venv*/
+venv/
+ENV/
+
+# JS/Node
+**/node_modules/
+.npm
+.eslintcache
+
+# AI & IDE
+.gemini/
+.cursor/
+
+# Archive & Reports
+archive/
+reports/
+storage/admin_data/korespondensi/
+docs/04-operations/scaling-results/
+*.json.bak
+*.bak
+*.pid
+*.log
+
+# SECURITY: Greyware simulation tools — must never reach remote repository
+simulation/greyware_op/
+mcp-unified/simulation/greyware_op/
+simulation/meshcentral_server/meshcentral-data/
+
+# Old audit and quality reports
+*_audit_*.json
+quality_report_*.json
+*.log.txt
+*.log
+
+# Python & System Trash
+**/__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.qualityrc
+mcp-data/
+mcp_subagent.pid
+mcp_subagent.log
+mcp_memory.pid
+mcp_memory.log
+meshcentral-backup-*.tar.gz
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sensitive credentials
+.env.secret
+*.secret
+
+# Log files
+server.log
+!logs/.gitkeep
+
+# Docker output
+docker_output.txt
+
+# Backup files
+*.tar.gz
+*.tar
+*.zip
+backups/*.tar.gz
+
+# Temporary files
+.tmp/
+.cache/
+**/tmp/
+
+# Archive Review Folder
+archive-review/
+
+# External Project Symlinks (relative paths)
+Bangda_PUU
+
+# Workspace Secrets, Credentials and Caches
+credentials/
+.env.*
+ocr_cache/
+processed/
+
+# Artefak produksi di root repo (canonical: storage/reports/extractions/)
+/extraction_*.json
+
+# Data files (optional - be careful with this)
+# *.json
+.ltm_memory.json
+
+# Suspicious/State JSON files
+mcp-unified/integrations/telegram/telegram_messages.json
