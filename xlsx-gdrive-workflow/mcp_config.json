@@ -1,9 +1,0 @@
-{
-  "command": "python3",
-  "args": ["/home/aseps/MCP/xlsx-gdrive-workflow/src/server.py"],
-  "env": {
-    "PYTHONPATH": "/home/aseps/MCP/xlsx-gdrive-workflow/src",
-    "MCP_XLSX_PROJECT": "true"
-  },
-  "workingDirectory": "/home/aseps/MCP/xlsx-gdrive-workflow"
-}
