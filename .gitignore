@@ -104,3 +104,7 @@ processed/
 
 # Suspicious/State JSON files
 mcp-unified/integrations/telegram/telegram_messages.json
+
+# Agent State Directories
+.serena/
+mcp-unified/.serena/
